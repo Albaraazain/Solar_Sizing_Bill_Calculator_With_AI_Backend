@@ -5,15 +5,15 @@ export const API_CONFIG = {
     ENDPOINTS: {
         BILL: {
             BASE: '/bill',
-            ANALYZE: '/analyze',
-            GET: '',
-            VALIDATE: '/validate',
-            HISTORY: '/history'
+            ANALYZE: '/bill/analyze',
+            GET: '/bill/details',
+            VALIDATE: '/bill/validate',
+            HISTORY: '/bill/history'
         },
         QUOTE: {
             BASE: '/quote',
-            GENERATE: '/generate',
-            GET: ''
+            GENERATE: '/quote/generate',
+            GET: '/quote/details'
         }
     },
     HEADERS: {
