@@ -1,6 +1,7 @@
 // path: frontend/src/api/services/billApi.js
 import { BaseApiService } from '../base/BaseApiService.js';
 import { API_CONFIG } from '../client/apiConfig.js';
+import { AppError } from '../../core/utils/ErrorHandler.js';
 
 export class BillApi extends BaseApiService {
     constructor() {
@@ -22,21 +23,26 @@ export class BillApi extends BaseApiService {
     async validateReferenceNumber(referenceNumber) {
         try {
             console.log('Validating reference number:', referenceNumber);
-            // Combine the validate endpoint with the base URL
-            const url = API_CONFIG.ENDPOINTS.BILL.VALIDATE;
-            console.log('Using endpoint:', url);
-            
-            const response = await this.post(url, {
-                reference_number: referenceNumber
-            });
-            
-            console.log('Validation response:', response);
+            const response = await this.post(
+                API_CONFIG.ENDPOINTS.BILL.VALIDATE,
+                { reference_number: referenceNumber }
+            );
             return response;
         } catch (error) {
-            console.error('Error validating reference number:', error);
+            // Handle specific error cases
+            if (error.code === 'NOT_FOUND') {
+                throw new AppError(
+                    'Invalid reference number. Please check and try again.',
+                    'VALIDATION_ERROR'
+                );
+            } else if (error.code === 'VALIDATION_ERROR') {
+                throw new AppError(
+                    'Please enter a valid 9-digit reference number.',
+                    'VALIDATION_ERROR'
+                );
+            }
             throw error;
         }
-        
     }
     
     async analyzeBill(referenceNumber) {

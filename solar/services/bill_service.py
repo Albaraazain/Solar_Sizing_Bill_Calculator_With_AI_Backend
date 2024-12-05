@@ -22,46 +22,51 @@ class BillService(BaseService):
     
     @classmethod
     def validate_bill(cls, reference_number: str) -> Dict[str, Any]:
-        """
-        Validate bill reference number and determine bill type.
-        
-        Args:
-            reference_number: Bill reference number to validate
-            
-        Returns:
-            Dict containing validation results
-            
-        Raises:
-            AppError: If bill validation fails
-        """
+        """Validate bill reference number and determine bill type."""
         try:
+            # First validate the format
+            if not reference_number.isdigit():
+                return cls.format_response({
+                    'isValid': False,
+                    'message': 'Reference number must contain only digits'
+                })
+
+            # Check each bill type
             for bill_type in cls.BILL_TYPES:
-                url = f"{cls.BASE_URL}/{bill_type}?refno={reference_number}"
-                response = requests.get(url)
-                if response.status_code != 200:
+                try:
+                    url = f"{cls.BASE_URL}/{bill_type}?refno={reference_number}"
+                    response = requests.get(url, timeout=10)  # Add timeout
+                    
+                    if response.status_code == 200 and "Bill Not Found" not in response.text:
+                        return cls.format_response({
+                            'isValid': True,
+                            'referenceNumber': reference_number,
+                            'type': bill_type,
+                            'source_url': url
+                        })
+                except requests.RequestException as e:
+                    print(f"Error checking {bill_type} bill: {str(e)}")
                     continue
 
-                if "Bill Not Found" not in response.text:
-                    return cls.format_response({
-                        'isValid': True,
-                        'referenceNumber': reference_number,
-                        'type': bill_type,
-                        'source_url': url
-                    })
-
-            raise AppError(
-                message='Bill not found',
-                code=ErrorTypes.NOT_FOUND,
-                data={'reference_number': reference_number}
-            )
+            # If we get here, bill was not found in any type
+            return cls.format_response({
+                'isValid': False,
+                'message': 'Bill not found. Please check your reference number.'
+            })
 
         except requests.RequestException as e:
             raise AppError(
-                message='Failed to validate bill',
+                message='Unable to validate bill at this time. Please try again later.',
                 code=ErrorTypes.NETWORK_ERROR,
-                data={'original_error': str(e)},
-            ) from e
-
+                data={'original_error': str(e)}
+            )
+        except Exception as e:
+            raise AppError(
+                message='Failed to validate bill',
+                code=ErrorTypes.SERVER_ERROR,
+                data={'original_error': str(e)}
+            )
+        
     @classmethod
     def get_bill_details(cls, reference_number: str) -> Dict[str, Any]:
         """

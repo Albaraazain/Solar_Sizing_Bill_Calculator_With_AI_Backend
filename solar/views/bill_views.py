@@ -11,25 +11,33 @@ from ..middleware.error_handler import AppError
 logger = logging.getLogger(__name__)
 
 class BillValidateAPIView(APIView):
-    """API endpoint to validate electricity bill reference numbers."""
-    
     def post(self, request):
-        logger.debug(f"Received validation request: {request.data}")
-
         try:
-
             reference_number = request.data.get('reference_number')
             
             if not reference_number:
-                raise AppError(
-                    message='Reference number is required',
-                    code='VALIDATION_ERROR',
-                    data={'field': 'reference_number'}
-                )
+                return Response({
+                    'success': False,
+                    'error': {
+                        'message': 'Please enter a reference number',
+                        'code': 'VALIDATION_ERROR'
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             # Use BillService to validate
-            response = BillService.validate_bill(reference_number)
-            return Response(response)
+            result = BillService.validate_bill(reference_number)
+            
+            if not result.get('data', {}).get('isValid', False):
+                message = result.get('data', {}).get('message', 'Invalid reference number')
+                return Response({
+                    'success': False,
+                    'error': {
+                        'message': message,
+                        'code': 'VALIDATION_ERROR'
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(result)
 
         except AppError as e:
             logger.warning(f"Bill validation failed: {str(e)}")
@@ -37,22 +45,21 @@ class BillValidateAPIView(APIView):
                 'success': False,
                 'error': {
                     'message': str(e),
-                    'code': e.code,
-                    'data': e.data
+                    'code': getattr(e, 'code', 'VALIDATION_ERROR')
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+            
         except Exception as e:
             logger.exception("Unexpected error in bill validation")
             return Response({
                 'success': False,
                 'error': {
-                    'message': 'An unexpected error occurred',
-                    'code': 'SERVER_ERROR',
-                    'data': {'detail': str(e)} if settings.DEBUG else {}
+                    'message': 'Unable to validate bill at this time. Please try again later.',
+                    'code': 'SERVER_ERROR'
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            
+            
 class BillDetailsAPIView(APIView):
     """API endpoint to fetch electricity bill details."""
     

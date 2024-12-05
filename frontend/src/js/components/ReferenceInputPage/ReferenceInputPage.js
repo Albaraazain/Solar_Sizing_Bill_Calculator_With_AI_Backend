@@ -2,21 +2,21 @@
 import { Api } from "/src/api/index.js";
 
 export class ReferenceInputPage {
-    constructor() {
-        this.state = {
-            provider: '',
-            referenceNumber: '',
-            whatsapp: '',
-            isLoading: false,
-            error: null
-        };
+  constructor() {
+    this.state = {
+      provider: "",
+      referenceNumber: "",
+      whatsapp: "",
+      isLoading: false,
+      error: null,
+    };
 
-        this.injectBaseStyles();
-    }
+    this.injectBaseStyles();
+  }
 
-    render() {
-        const app = document.getElementById('app');
-        app.innerHTML = `
+  render() {
+    const app = document.getElementById("app");
+    app.innerHTML = `
             <div class="main-content">
                 <!-- Logo Section -->
                 <div class="logo-section">
@@ -41,11 +41,11 @@ export class ReferenceInputPage {
             </div>
         `;
 
-        this.attachEventListeners();
-    }
+    this.attachEventListeners();
+  }
 
-    getFormTemplate() {
-        return `
+  getFormTemplate() {
+    return `
             <form id="quote-form" class="space-y-6">
                 <!-- Provider Field -->
                 <div class="form-group">
@@ -62,20 +62,30 @@ export class ReferenceInputPage {
                     >
                 </div>
 
-                <!-- Reference Number Field -->
                 <div class="form-group">
-                    <label class="form-label" for="referenceNumber">
-                        Enter your bill reference number
-                    </label>
-                    <input 
-                        type="text" 
-                        id="referenceNumber"
-                        class="form-input"
-                        placeholder="Enter reference number"
-                        value="${this.state.referenceNumber}"
-                        ${this.state.isLoading ? "disabled" : ""}
-                    >
-                </div>
+                <label class="form-label" for="referenceNumber">
+                    Enter your bill reference number
+                </label>
+                <input 
+                    type="text" 
+                    id="referenceNumber"
+                    class="form-input ${
+                      this.state.error ? "border-red-500" : ""
+                    }"
+                    placeholder="Enter 9-digit reference number"
+                    value="${this.state.referenceNumber}"
+                    ${this.state.isLoading ? "disabled" : ""}
+                >
+                ${
+                  this.state.error
+                    ? `
+                    <p class="mt-1 text-sm text-red-600">
+                        ${this.state.error}
+                    </p>
+                `
+                    : ""
+                }
+            </div>
 
                 <!-- WhatsApp Field -->
                 <div class="form-group">
@@ -98,24 +108,29 @@ export class ReferenceInputPage {
                     class="submit-button"
                     ${this.state.isLoading ? "disabled" : ""}
                 >
-                    ${this.state.isLoading ?
-            `<span>Processing</span>
-                         <div class="spinner"></div>` :
-            'Generate Quote'
-        }
+                    ${
+                      this.state.isLoading
+                        ? `<span>Processing</span>
+                         <div class="spinner"></div>`
+                        : "Generate Quote"
+                    }
                 </button>
 
-                ${this.state.error ? `
+                ${
+                  this.state.error
+                    ? `
                     <div class="error-message">
                         ${this.state.error}
                     </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </form>
         `;
-    }
+  }
 
-    getRightContentTemplate() {
-        return `
+  getRightContentTemplate() {
+    return `
             <div class="right-content">
                 <p>
                     Our AI tool quickly provides
@@ -130,11 +145,11 @@ export class ReferenceInputPage {
                 POWERED BY AI
             </div>
         `;
-    }
+  }
 
-    injectBaseStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  injectBaseStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
             :root {
                 --color-bg: #ffffff;
                 --color-fg: #1f2937;
@@ -299,98 +314,101 @@ export class ReferenceInputPage {
                 }
             }
         `;
-        document.head.appendChild(style);
+    document.head.appendChild(style);
+  }
+
+  attachEventListeners() {
+    const form = document.getElementById("quote-form");
+    if (form) {
+      form.addEventListener("submit", this.handleSubmit.bind(this));
     }
 
-    attachEventListeners() {
-        const form = document.getElementById('quote-form');
-        if (form) {
-            form.addEventListener('submit', this.handleSubmit.bind(this));
-        }
+    const inputs = document.querySelectorAll(".form-input");
+    inputs.forEach((input) => {
+      input.addEventListener("input", this.handleInput.bind(this));
+    });
 
-        const inputs = document.querySelectorAll('.form-input');
-        inputs.forEach(input => {
-            input.addEventListener('input', this.handleInput.bind(this));
-        });
+    const whatsappInput = document.getElementById("whatsapp");
+    if (whatsappInput) {
+      whatsappInput.addEventListener(
+        "input",
+        this.formatPhoneNumber.bind(this)
+      );
+    }
+  }
 
-        const whatsappInput = document.getElementById('whatsapp');
-        if (whatsappInput) {
-            whatsappInput.addEventListener('input', this.formatPhoneNumber.bind(this));
-        }
+  handleInput(event) {
+    const { id, value } = event.target;
+    this.state[id] = value;
+
+    if (this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+
+  formatPhoneNumber(event) {
+    const input = event.target;
+    let value = input.value.replace(/[^\d+]/g, "");
+
+    if (value.startsWith("+92")) {
+      if (value.length > 3) {
+        value =
+          value.slice(0, 3) +
+          " " +
+          value.slice(3, 6) +
+          " " +
+          value.slice(6, 13);
+      }
     }
 
-    handleInput(event) {
-        const { id, value } = event.target;
-        this.state[id] = value;
+    input.value = value;
+    this.state.whatsapp = value;
+  }
 
-        if (this.state.error) {
-            this.setState({ error: null });
-        }
+  handleSubmit = async (event) => {
+    event.preventDefault();
+    if (this.state.isLoading) return;
+
+    try {
+        
+        this.setState({ isLoading: true, error: null });
+
+      const response = await Api.bill.validateReferenceNumber(
+        this.state.referenceNumber
+      );
+
+      if (response.data?.isValid) {
+        sessionStorage.setItem(
+          "currentReferenceNumber",
+          this.state.referenceNumber
+        );
+        window.router.push("/bill-review");
+      }
+    } catch (error) {
+      this.setState({
+        error:
+          error.message ||
+          "Failed to validate reference number. Please try again.",
+        isLoading: false,
+      });
+
+      // Show toast notification if available
+      if (window.toasts) {
+        window.toasts.show(error.message, "error");
+      }
     }
+  };
 
-    formatPhoneNumber(event) {
-        let input = event.target;
-        let value = input.value.replace(/[^\d+]/g, '');
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    this.updateFormState();
+  }
 
-        if (value.startsWith('+92')) {
-            if (value.length > 3) {
-                value = value.slice(0, 3) + ' ' + value.slice(3, 6) + ' ' + value.slice(6, 13);
-            }
-        }
+  updateFormState() {
+    const form = document.getElementById("quote-form");
+    if (!form) return;
 
-        input.value = value;
-        this.state.whatsapp = value;
-    }
-
-    async handleSubmit(event) {
-        event.preventDefault();
-        if (this.state.isLoading) return;
-
-        console.log('Api object:', Api);
-        console.log('Api.bill:', Api.bill);
-        console.log('MockBillApi methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(Api.bill)));
-
-        try {
-            this.setState({ isLoading: true, error: null });
-            console.log('Submitting reference number:', this.state.referenceNumber);
-
-            const response = await Api.bill.validateReferenceNumber(this.state.referenceNumber);
-            console.log('Validation response:', response);
-
-            // Check the nested data structure
-            if (!response?.data?.isValid) {
-                throw new Error('Invalid reference number');
-            }
-
-            // Store the reference number
-            sessionStorage.setItem('currentReferenceNumber', this.state.referenceNumber);
-
-            // Navigate to bill review
-            window.router.push('/bill-review');
-        } catch (error) {
-            console.error('Validation error:', error);
-            this.setState({
-                error: error.message || 'Failed to validate reference number',
-                isLoading: false
-            });
-        }
-    }
-
-    setState(newState) {
-        this.state = { ...this.state, ...newState };
-        this.updateFormState();
-    }
-
-    updateFormState() {
-        const form = document.getElementById('quote-form');
-        if (!form) return;
-
-        form.innerHTML = this.getFormTemplate();
-        this.attachEventListeners();
-    }
+    form.innerHTML = this.getFormTemplate();
+    this.attachEventListeners();
+  }
 }
-
-
-
-
-
