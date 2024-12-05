@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/services/bill_parser/base_parser.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733162249015,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733162249015,
+            "name": "Commit-0",
+            "content": "# solar/services/bill_parser/base_parser.py\r\n\r\nfrom abc import ABC, abstractmethod\r\nfrom bs4 import BeautifulSoup\r\nimport datetime\r\n\r\nclass BillParser(ABC):\r\n    def __init__(self, html_content):\r\n        self.soup = BeautifulSoup(html_content, \"html.parser\")\r\n        self.year_data = []\r\n    \r\n    @abstractmethod\r\n    def extract_name(self):\r\n        pass\r\n    \r\n    @abstractmethod\r\n    def extract_monthly_units(self):\r\n        pass\r\n    \r\n    def generate_year_data(self, issue_date_str):\r\n        months = [\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\",\r\n                \"Jul\", \"Aug\", \"Sep\", \"Oct\", \"Nov\", \"Dec\"]\r\n        try:\r\n            issue_date = datetime.datetime.strptime(issue_date_str, \"%d %b %y\")\r\n            start_month_index = issue_date.month - 1\r\n            start_year = issue_date.year - 1\r\n            self.year_data = []\r\n\r\n            for i in range(12):\r\n                month = months[(start_month_index + i) % 12]\r\n                year = start_year if (start_month_index + i) < 12 else start_year + 1\r\n                self.year_data.append(f\"{month}{year % 100:02d}\")\r\n\r\n            return self.year_data\r\n        except Exception as e:\r\n            print(f\"Error generating year data: {e}\")\r\n            return []\r\n\r\n    def parse_bill(self):\r\n        try:\r\n            result = {\r\n                \"Name\": self.extract_name(),\r\n                \"Payable Within Due Date\": self.extract_payable_within_due_date(),\r\n                \"Units Consumed\": self.extract_units_consumed(),\r\n                \"Issue Date\": self.extract_issue_date(),\r\n                \"Due Date\": self.extract_due_date(),\r\n                \"Monthly Units\": self.extract_monthly_units(),\r\n            }\r\n            \r\n            # Calculate additional metrics\r\n            if result[\"Monthly Units\"]:\r\n                result[\"Total Yearly Units\"] = sum(int(units) for units in result[\"Monthly Units\"].values() if units.isdigit())\r\n                result[\"Max Units\"] = max(int(units) for units in result[\"Monthly Units\"].values() if units.isdigit())\r\n            \r\n            return result\r\n        except Exception as e:\r\n            print(f\"Error parsing bill: {e}\")\r\n            return None"
+        }
+    ]
+}

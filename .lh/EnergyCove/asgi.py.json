@@ -1,0 +1,18 @@
+{
+    "sourceFile": "EnergyCove/asgi.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733342103641,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733342103641,
+            "name": "Commit-0",
+            "content": "\"\"\"\nASGI config for EnergyCove project.\n\nIt exposes the ASGI callable as a module-level variable named ``application``.\n\nFor more information on this file, see\nhttps://docs.djangoproject.com/en/5.0/howto/deployment/asgi/\n\"\"\"\n\nimport os\n\nfrom django.core.asgi import get_asgi_application\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'EnergyCove.settings')\n\napplication = get_asgi_application()\n"
+        }
+    ]
+}
