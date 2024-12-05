@@ -50,6 +50,121 @@ class BillValidateAPIView(APIView):
                     "message": str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+class BillDetailsAPIView(APIView):
+    def get(self, request, reference_number=None):
+        if not reference_number:
+            return Response({
+                "success": False,
+                "message": "Reference number is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get bill details using your existing functions
+            status_result = verify_bill(reference_number)
+            if not status_result['exists']:
+                return Response({
+                    "success": False,
+                    "message": "Bill not found"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Get HTML content from the bill URL
+            url = f"{status_result['source_url']}?refno={reference_number}"
+            response = requests.get(url)
+            html_content = response.text
+
+            # Parse bill based on type
+            if status_result['source_url'].endswith('industrial'):
+                bill_data = parse_electricity_bill_industrial(html_content)
+            else:
+                bill_data = parse_electricity_bill_general(html_content)
+
+            # Calculate system sizes
+            yearly_units = int(bill_data['Total Yearly Units'])
+            daily_avg = yearly_units / 365
+            system_size_kw = daily_avg / 4  # Assuming 4 kWh per kW per day
+
+            # Add calculated fields
+            enhanced_data = {
+                **bill_data,
+                "customerName": bill_data.get("Name", ""),
+                "unitsConsumed": int(bill_data.get("Units Consumed", 0)),
+                "dueDate": bill_data.get("Due Date", ""),
+                "issueDate": bill_data.get("Issue Date", ""),
+                "amount": float(bill_data.get("Payable Within Due Date", "0").replace("PKR ", "").replace(",", "")),
+                "systemSizing": {
+                    "recommended": math.ceil(system_size_kw * 1.5),
+                    "smaller": math.ceil(system_size_kw * 1.3),
+                    "larger": math.ceil(system_size_kw * 1.7)
+                }
+            }
+
+            return Response({
+                "success": True,
+                "data": enhanced_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BillAnalyzeAPIView(APIView):
+    def post(self, request):
+        reference_number = request.data.get("reference_number")
+        if not reference_number:
+            return Response({
+                "success": False,
+                "message": "Reference number is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get bill details
+            status_result = verify_bill(reference_number)
+            if not status_result['exists']:
+                return Response({
+                    "success": False,
+                    "message": "Bill not found"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Mock analysis data (replace with actual calculations)
+            analysis_data = {
+                "consumption": {
+                    "daily": 25,
+                    "monthly": 750,
+                    "yearly": 9000,
+                    "peak": 35
+                },
+                "systemSize": {
+                    "recommended": 5,
+                    "range": {
+                        "min": 4,
+                        "max": 6
+                    }
+                },
+                "savings": {
+                    "monthly": 15000,
+                    "yearly": 180000,
+                    "paybackPeriod": 4.5
+                },
+                "environmental": {
+                    "co2Reduction": 5.2,
+                    "treesEquivalent": 80
+                }
+            }
+
+            return Response({
+                "success": True,
+                "data": analysis_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GetBillDataAPIView(APIView):
     def get(self, request, reference_number):
