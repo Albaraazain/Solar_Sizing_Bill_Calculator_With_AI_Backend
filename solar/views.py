@@ -631,3 +631,221 @@ def get_prices(request):
             'net_metering': net_metering.cost if net_metering else ''
         }
         return JsonResponse(response_data, safe=False)
+
+
+
+
+# ***************************************************quote api view***************************************************
+class QuoteGenerateAPIView(APIView):
+    def post(self, request):
+        try:
+            bill_data = request.data
+            if not bill_data:
+                return Response({
+                    "success": False,
+                    "message": "Bill data is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get system components
+            panel = Panel.objects.get(default_choice=True)
+            yearly_units = float(bill_data.get('Total Yearly Units', 0))
+            daily_avg = yearly_units / 365
+            system_size_kw = daily_avg / 4  # Assuming 4 kWh per kW per day
+            system_size = math.ceil(system_size_kw * 1.5)  # Recommended size
+
+            # Calculate panels needed
+            panels_needed = math.ceil((system_size * 1000) / panel.power)
+
+            # Get appropriate inverter
+            inverter = Inverter.objects.filter(power__gte=system_size).order_by('power').first()
+            if not inverter:
+                return Response({
+                    "success": False,
+                    "message": "No suitable inverter found"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get variable costs
+            net_metering = variableCosts.objects.get(cost_name='Net Metering').cost
+            installation_cost = variableCosts.objects.get(cost_name='Installation Cost per Watt').cost
+            frame_cost = variableCosts.objects.get(cost_name='Frame Cost per Watt').cost
+            labor_cost = variableCosts.objects.get(cost_name='Labor Cost').cost
+
+            # Calculate total installations costs
+            total_installation_cost = installation_cost * system_size * 1000
+            total_frame_cost = frame_cost * system_size * 1000
+            total_labor_cost = labor_cost * system_size * 1000
+
+            # Get bracket costs based on system size
+            dc_cable_cost = BracketCosts.objects.filter(
+                Type='DC Cables', 
+                SystemRange__lte=system_size
+            ).order_by('-SystemRange').first()
+
+            ac_cable_cost = BracketCosts.objects.filter(
+                Type='AC Cables', 
+                SystemRange__lte=system_size
+            ).order_by('-SystemRange').first()
+
+            accessories_cost = BracketCosts.objects.filter(
+                Type='Accessories', 
+                SystemRange__lte=system_size
+            ).order_by('-SystemRange').first()
+
+            # Calculate total cost
+            panel_cost = panels_needed * panel.price
+            total_cost = (
+                panel_cost +
+                inverter.price +
+                net_metering +
+                total_installation_cost +
+                total_frame_cost +
+                dc_cable_cost.cost +
+                ac_cable_cost.cost +
+                accessories_cost.cost +
+                total_labor_cost
+            )
+
+            # Calculate monthly production estimates
+            daily_production = system_size * 4  # 4 kWh per kW per day average
+            monthly_production = daily_production * 30
+            yearly_production = daily_production * 365
+
+            # Prepare response matching frontend expectations
+            quote_data = {
+                "systemDetails": {
+                    "systemSize": system_size,
+                    "panelCount": panels_needed,
+                    "panelType": panel.brand,
+                    "inverterType": inverter.brand,
+                    "roofArea": panels_needed * 2,  # Approximate area in square meters
+                    "installationTime": "3-5 days",
+                    "warranty": "25 years"
+                },
+                "production": {
+                    "daily": daily_production,
+                    "monthly": self.generate_monthly_production(monthly_production),
+                    "annual": yearly_production,
+                    "peakHours": 4.5,
+                    "performanceRatio": 0.75
+                },
+                "financial": {
+                    "systemCost": total_cost,
+                    "annualSavings": yearly_production * 20,  # Assuming PKR 20 per unit
+                    "monthlySavings": monthly_production * 20,
+                    "paybackPeriod": 5.5,  # Approximate
+                    "roi": 18.2,  # Approximate annual ROI
+                    "savingsTimeline": self.generate_savings_timeline(total_cost, yearly_production * 20)
+                },
+                "environmental": {
+                    "co2Offset": system_size * 1.2,  # Tons per year
+                    "treesEquivalent": system_size * 20,
+                    "homesEquivalent": math.floor(yearly_production / 12000),
+                    "carbonFootprintReduction": system_size * 1000  # kg per year
+                }
+            }
+
+            return Response({
+                "success": True,
+                "data": quote_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def generate_monthly_production(self, base_production):
+        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        seasonal_factors = {
+            'winter': 0.7,  # Nov-Feb
+            'spring': 0.9,  # Mar-Apr
+            'summer': 1.2,  # May-Aug
+            'fall': 0.8     # Sep-Oct
+        }
+
+        monthly_data = []
+        for i, month in enumerate(months):
+            if i < 2 or i == 11:
+                factor = seasonal_factors['winter']
+            elif i < 5:
+                factor = seasonal_factors['spring']
+            elif i < 8:
+                factor = seasonal_factors['summer']
+            else:
+                factor = seasonal_factors['fall']
+
+            production = math.round(base_production * factor)
+            consumption = math.round(base_production * 0.9)  # Estimated consumption
+            monthly_data.append({
+                "month": month,
+                "production": production,
+                "consumption": consumption
+            })
+
+        return monthly_data
+
+    def generate_savings_timeline(self, system_cost, annual_savings):
+        return [
+            {
+                "year": year + 1,
+                "annualSavings": math.round(annual_savings * (1 + (year * 0.05))),
+                "cumulativeSavings": math.round(annual_savings * (year + 1) * (1 + (year * 0.025)))
+            }
+            for year in range(25)
+        ]
+        
+class QuoteDetailsAPIView(APIView):
+    def get(self, request, quote_id):
+        try:
+            # Since you might not have a Quote model yet, return mock data
+            # matching your frontend expectations
+            quote_data = {
+                "quoteId": quote_id,
+                "systemDetails": {
+                    "systemSize": 5.0,
+                    "panelCount": 14,
+                    "panelType": "Mono-crystalline",
+                    "inverterType": "String Inverter",
+                    "roofArea": 28,
+                    "installationTime": "3-5 days",
+                    "warranty": "25 years"
+                },
+                "production": {
+                    "daily": 20,
+                    "monthly": [
+                        {"month": "Jan", "production": 600, "consumption": 550},
+                        # Add more months as needed
+                    ],
+                    "annual": 7300
+                },
+                "financial": {
+                    "systemCost": 850000,
+                    "annualSavings": 180000,
+                    "monthlySavings": 15000,
+                    "paybackPeriod": 4.7,
+                    "roi": 21.2,
+                    "savingsTimeline": [
+                        {"year": 1, "annualSavings": 180000, "cumulativeSavings": 180000},
+                        # Add more years as needed
+                    ]
+                },
+                "environmental": {
+                    "co2Offset": 5.2,
+                    "treesEquivalent": 80,
+                    "homesEquivalent": 2,
+                    "carbonFootprintReduction": 5000
+                }
+            }
+
+            return Response({
+                "success": True,
+                "data": quote_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
