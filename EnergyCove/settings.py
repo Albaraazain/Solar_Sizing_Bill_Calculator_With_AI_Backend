@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-pc=lv^g6gx1cqb_s6qs7&9&a@u8d@&ek6z82v=-vg85m9+6)m-
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+API_URL = 'http://127.0.0.1:8000/api'  # Add this line
 
 
 # Application definition
@@ -51,11 +52,31 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'solar.middleware.auth_middleware.AuthMiddleware',
+    'solar.middleware.error_handler.ErrorHandlerMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4173',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000'
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_METHODS = True  # Or specify methods explicitly
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 
 
 ROOT_URLCONF = 'EnergyCove.urls'
@@ -126,13 +147,54 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/assets/'  # match vite assets directory name
 STATICFILES_DIRS = [
-    BASE_DIR / 'frontend' / 'dist' / 'assets',
+    BASE_DIR / 'frontend' / 'dist' / 'assets',  # point to vite assets
 ]
+
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# DRF settings for error handling
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'solar.utils.error_utils.custom_exception_handler',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    # Non-field errors key (matches frontend expectations)
+    'NON_FIELD_ERRORS_KEY': 'error',
+}
+
+# Logging configuration for error tracking
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'solar': {  # Your app name
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
+CORS_ALLOW_CREDENTIALS = True

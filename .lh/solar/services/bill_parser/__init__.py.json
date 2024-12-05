@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/services/bill_parser/__init__.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733411023108,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733411023108,
+            "name": "Commit-0",
+            "content": "# solar/services/bill_parser/__init__.py\r\n\"\"\"Bill parsing package for handling different types of electricity bills.\"\"\"\r\n\r\nfrom .base_parser import BillParser\r\nfrom .general_parser import GeneralBillParser\r\nfrom .industrial_parser import IndustrialBillParser\r\n\r\n__all__ = [\r\n    'BillParser',\r\n    'GeneralBillParser',\r\n    'IndustrialBillParser'\r\n]\r\n\r\ndef get_parser_for_bill(bill_type: str, html_content: str) -> BillParser:\r\n    \"\"\"Factory function to get appropriate parser for bill type.\"\"\"\r\n    parser_map = {\r\n        'general': GeneralBillParser,\r\n        'industrial': IndustrialBillParser\r\n    }\r\n    \r\n    parser_class = parser_map.get(bill_type, GeneralBillParser)\r\n    return parser_class(html_content)"
+        }
+    ]
+}

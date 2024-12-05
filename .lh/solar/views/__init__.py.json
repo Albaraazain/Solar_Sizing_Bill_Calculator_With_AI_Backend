@@ -1,0 +1,26 @@
+{
+    "sourceFile": "solar/views/__init__.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1733408614730,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733412299034,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,27 +1,79 @@\n-from .bill_views import BillValidateAPIView, BillDetailsAPIView, BillAnalyzeAPIView\r\n-from .quote_views import QuoteGenerateAPIView, QuoteDetailsAPIView\r\n+# solar/views/__init__.py\r\n+\"\"\"Views package for handling API and frontend requests.\"\"\"\r\n+\r\n from .admin_views import (\r\n     PanelViewSet,\r\n     InverterViewSet,\r\n-    CustomerViewSet,\r\n-    SetDefaultPanelView,\r\n-    PriceConfigurationView\r\n+    PriceConfigurationView,\r\n+    DashboardStatsView\r\n )\r\n-from .dashboard_views import DashboardStatsView\r\n-from .public_views import IndexView, QuotationView\r\n+from .bill_views import (\r\n+    BillValidateAPIView,\r\n+    BillDetailsAPIView,\r\n+    BillAnalyzeAPIView\r\n+)\r\n+from .customer_views import (\r\n+    CustomerListAPIView,\r\n+    CustomerDetailAPIView,\r\n+    CustomerBulkCreateAPIView,\r\n+    CustomerStatsAPIView\r\n+)\r\n+from .quote_views import (\r\n+    QuoteGenerateAPIView,\r\n+    QuoteDetailsAPIView,\r\n+    QuoteSaveAPIView\r\n+)\r\n+from .document_views import (\r\n+    DocumentGenerateView,\r\n+    DocumentDownloadView,\r\n+    DocumentListView\r\n+)\r\n+from .dashboard_views import (\r\n+    DashboardMetricsView,\r\n+    DashboardChartsView,\r\n+    DashboardSummaryView\r\n+)\r\n+from .public_views import (\r\n+    IndexView,\r\n+    QuotationView,\r\n+    ContactView\r\n+)\r\n \r\n __all__ = [\r\n+    # Admin Views\r\n+    'PanelViewSet',\r\n+    'InverterViewSet',\r\n+    'PriceConfigurationView',\r\n+    'DashboardStatsView',\r\n+    \r\n+    # Bill Views\r\n     'BillValidateAPIView',\r\n     'BillDetailsAPIView',\r\n     'BillAnalyzeAPIView',\r\n+    \r\n+    # Customer Views\r\n+    'CustomerListAPIView',\r\n+    'CustomerDetailAPIView',\r\n+    'CustomerBulkCreateAPIView',\r\n+    'CustomerStatsAPIView',\r\n+    \r\n+    # Quote Views\r\n     'QuoteGenerateAPIView',\r\n     'QuoteDetailsAPIView',\r\n-    'PanelViewSet',\r\n-    'InverterViewSet',\r\n-    'CustomerViewSet',\r\n-    'SetDefaultPanelView',\r\n-    'PriceConfigurationView',\r\n-    'DashboardStatsView',\r\n+    'QuoteSaveAPIView',\r\n+    \r\n+    # Document Views\r\n+    'DocumentGenerateView',\r\n+    'DocumentDownloadView',\r\n+    'DocumentListView',\r\n+    \r\n+    # Dashboard Views\r\n+    'DashboardMetricsView',\r\n+    'DashboardChartsView',\r\n+    'DashboardSummaryView',\r\n+    \r\n+    # Public Views\r\n     'IndexView',\r\n     'QuotationView',\r\n+    'ContactView'\r\n ]\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1733427979003,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,9 +4,9 @@\n from .admin_views import (\r\n     PanelViewSet,\r\n     InverterViewSet,\r\n     PriceConfigurationView,\r\n-    DashboardStatsView\r\n+    # DashboardStatsView\r\n )\r\n from .bill_views import (\r\n     BillValidateAPIView,\r\n     BillDetailsAPIView,\r\n@@ -43,9 +43,9 @@\n     # Admin Views\r\n     'PanelViewSet',\r\n     'InverterViewSet',\r\n     'PriceConfigurationView',\r\n-    'DashboardStatsView',\r\n+    # 'DashboardStatsView',\r\n     \r\n     # Bill Views\r\n     'BillValidateAPIView',\r\n     'BillDetailsAPIView',\r\n"
+                }
+            ],
+            "date": 1733408614730,
+            "name": "Commit-0",
+            "content": "from .bill_views import BillValidateAPIView, BillDetailsAPIView, BillAnalyzeAPIView\r\nfrom .quote_views import QuoteGenerateAPIView, QuoteDetailsAPIView\r\nfrom .admin_views import (\r\n    PanelViewSet,\r\n    InverterViewSet,\r\n    CustomerViewSet,\r\n    SetDefaultPanelView,\r\n    PriceConfigurationView\r\n)\r\nfrom .dashboard_views import DashboardStatsView\r\nfrom .public_views import IndexView, QuotationView\r\n\r\n__all__ = [\r\n    'BillValidateAPIView',\r\n    'BillDetailsAPIView',\r\n    'BillAnalyzeAPIView',\r\n    'QuoteGenerateAPIView',\r\n    'QuoteDetailsAPIView',\r\n    'PanelViewSet',\r\n    'InverterViewSet',\r\n    'CustomerViewSet',\r\n    'SetDefaultPanelView',\r\n    'PriceConfigurationView',\r\n    'DashboardStatsView',\r\n    'IndexView',\r\n    'QuotationView',\r\n]"
+        }
+    ]
+}

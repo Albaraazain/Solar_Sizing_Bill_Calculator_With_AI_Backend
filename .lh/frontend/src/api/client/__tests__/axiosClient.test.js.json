@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/src/api/client/__tests__/axiosClient.test.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733438793854,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733438793854,
+            "name": "Commit-0",
+            "content": "// src/api/client/__tests__/axiosClient.test.js\r\nimport { jest, expect, describe, test, beforeEach } from '@jest/globals';\r\n\r\n// Mock modules first, before any imports\r\njest.mock('../../../core/events/EventBus.js', () => ({\r\n    eventBus: {\r\n        publish: jest.fn(),\r\n        subscribe: jest.fn(),\r\n        clear: jest.fn()\r\n    }\r\n}));\r\n\r\njest.mock('../../../core/utils/ErrorHandler.js', () => ({\r\n    ErrorHandler: {\r\n        handle: jest.fn()\r\n    }\r\n}));\r\n\r\n// Now import the modules\r\nimport axiosClient from '../axiosClient.js';\r\nimport { eventBus } from '../../../core/events/EventBus.js';\r\nimport { ErrorHandler } from '../../../core/utils/ErrorHandler.js';\r\n\r\ndescribe('Axios Client', () => {\r\n    const localStorageMock = {\r\n        store: {},\r\n        getItem: jest.fn(key => localStorageMock.store[key] || null),\r\n        setItem: jest.fn((key, value) => {\r\n            localStorageMock.store[key] = value.toString();\r\n        }),\r\n        removeItem: jest.fn(key => {\r\n            delete localStorageMock.store[key];\r\n        }),\r\n        clear: jest.fn(() => {\r\n            localStorageMock.store = {};\r\n        })\r\n    };\r\n\r\n    beforeEach(() => {\r\n        Object.defineProperty(globalThis, 'localStorage', {\r\n            value: localStorageMock,\r\n            writable: true\r\n        });\r\n        jest.clearAllMocks();\r\n        localStorageMock.clear();\r\n    });\r\n\r\n    test('adds auth token to request headers when available', async () => {\r\n        const token = 'test-token';\r\n        localStorage.setItem('token', token);\r\n\r\n        const config = { headers: {} };\r\n        const modifiedConfig = await axiosClient.interceptors.request.handlers[0].fulfilled(config);\r\n\r\n        expect(modifiedConfig.headers.Authorization).toBe(`Bearer ${token}`);\r\n    });\r\n\r\n    test('handles unauthorized response', async () => {\r\n        const error = {\r\n            response: { status: 401 }\r\n        };\r\n\r\n        try {\r\n            await axiosClient.interceptors.response.handlers[0].rejected(error);\r\n            throw new Error('Should have thrown an error');\r\n        } catch (e) {\r\n            expect(eventBus.publish).toHaveBeenCalledWith('auth:unauthorized');\r\n            expect(ErrorHandler.handle).toHaveBeenCalledWith(error);\r\n        }\r\n    });\r\n\r\n    test('handles request errors', async () => {\r\n        const error = new Error('Network Error');\r\n\r\n        try {\r\n            await axiosClient.interceptors.request.handlers[0].rejected(error);\r\n            throw new Error('Should have thrown an error');\r\n        } catch (e) {\r\n            expect(ErrorHandler.handle).toHaveBeenCalledWith(error);\r\n        }\r\n    });\r\n});\r\n"
+        }
+    ]
+}

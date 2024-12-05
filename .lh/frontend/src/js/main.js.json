@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/src/js/main.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733434847341,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733434847341,
+            "name": "Commit-0",
+            "content": "// src/js/main.js\r\nimport { Router } from \"./router.js\";\r\nimport { Api } from \"../api/index.js\";\r\nimport { Toasts } from \"./Toasts.js\";\r\n\r\nclass App {\r\n    constructor() {\r\n        this.initializeApp();\r\n    }\r\n\r\n    async initializeApp() {\r\n        try {\r\n            // Initialize toasts first\r\n            window.toasts = new Toasts();\r\n\r\n            // Initialize API\r\n            const apiInitialized = await Api.initialize();\r\n            if (!apiInitialized) {\r\n                this.handleInitializationError(new Error('API initialization failed'));\r\n                return;\r\n            }\r\n\r\n            // Initialize router last\r\n            window.router = new Router();\r\n\r\n            // Set up global error handling\r\n            this.setupErrorHandling();\r\n\r\n            console.log('Application initialized successfully');\r\n        } catch (error) {\r\n            console.error('Failed to initialize application:', error);\r\n            this.handleInitializationError(error);\r\n        }\r\n    }\r\n\r\n    setupErrorHandling() {\r\n        window.onerror = (msg, url, line, col, error) => {\r\n            console.error('Global error:', { msg, url, line, col, error });\r\n            window.toasts?.show(\r\n                'An unexpected error occurred. Please try again.',\r\n                'error'\r\n            );\r\n        };\r\n\r\n        window.onunhandledrejection = (event) => {\r\n            console.error('Unhandled promise rejection:', event.reason);\r\n            window.toasts?.show(\r\n                'An unexpected error occurred. Please try again.',\r\n                'error'\r\n            );\r\n        };\r\n    }\r\n\r\n    handleInitializationError(error) {\r\n        const app = document.getElementById('app');\r\n        if (app) {\r\n            app.innerHTML = `\r\n                <div class=\"flex items-center justify-center h-screen\">\r\n                    <div class=\"text-center max-w-md mx-auto px-4\">\r\n                        <h1 class=\"text-2xl font-bold text-gray-800 mb-4\">\r\n                            Failed to Initialize Application\r\n                        </h1>\r\n                        <p class=\"text-gray-600 mb-6\">\r\n                            We're having trouble starting the application. \r\n                            Please refresh the page or try again later.\r\n                        </p>\r\n                        <button \r\n                            onclick=\"window.location.reload()\" \r\n                            class=\"px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors\"\r\n                        >\r\n                            Refresh Page\r\n                        </button>\r\n                    </div>\r\n                </div>\r\n            `;\r\n        }\r\n    }\r\n}\r\n\r\n// Start the application\r\nnew App();\r\n"
+        }
+    ]
+}

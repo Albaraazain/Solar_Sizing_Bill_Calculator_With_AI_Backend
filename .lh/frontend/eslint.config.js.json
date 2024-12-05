@@ -1,0 +1,30 @@
+{
+    "sourceFile": "frontend/eslint.config.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1733438182204,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733438300705,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,11 +3,14 @@\n \n /** @type {import('eslint').Linter.Config[]} */\n export default [\n   {\n-    languageOptions: { globals: globals.browser },\n+    files: [\"**/*.js\", \"**/*.jsx\"],\n+    languageOptions: { \n+      globals: globals.browser \n+    },\n     rules: {\n-      \"no-unused-vars\": \"off\"\n+      \"no-unused-vars\": \"off\",\n     }\n   },\n   pluginJs.configs.recommended,\n ];\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1733438633363,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,13 +4,15 @@\n /** @type {import('eslint').Linter.Config[]} */\n export default [\n   {\n     files: [\"**/*.js\", \"**/*.jsx\"],\n-    languageOptions: { \n-      globals: globals.browser \n+    languageOptions: {\n+      globals: globals.browser,\n     },\n     rules: {\n-      \"no-unused-vars\": \"off\",\n-    }\n+      eqeqeq: \"off\",\n\\ No newline at end of file\n+      \"no-unused-vars\": \"error\",\n+      \"prefer-const\": [\"error\", { ignoreReadBeforeAssign: true }],\n+    },\n   },\n   pluginJs.configs.recommended,\n-];\n+];\n"
+                },
+                {
+                    "date": 1733438679570,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -14,5 +14,5 @@\n       \"prefer-const\": [\"error\", { ignoreReadBeforeAssign: true }],\n     },\n   },\n   pluginJs.configs.recommended,\n-];\n\\ No newline at end of file\n+];\n"
+                }
+            ],
+            "date": 1733438182204,
+            "name": "Commit-0",
+            "content": "import globals from \"globals\";\nimport pluginJs from \"@eslint/js\";\n\n/** @type {import('eslint').Linter.Config[]} */\nexport default [\n  {\n    languageOptions: { globals: globals.browser },\n    rules: {\n      \"no-unused-vars\": \"off\"\n    }\n  },\n  pluginJs.configs.recommended,\n];"
+        }
+    ]
+}

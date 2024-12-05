@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/src/api/factory/ApiFactory.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733436879167,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733436879167,
+            "name": "Commit-0",
+            "content": "// src/api/factory/ApiFactory.js\r\nimport { ENV } from '/src/config/environment.js';\r\nimport { MockBillApi } from '../mock/MockBillApi.js';\r\nimport { MockQuoteApi } from '../mock/MockQuoteApi.js';\r\nimport { BillApi } from '../services/billApi.js';\r\nimport { QuoteApi } from '../services/quoteApi.js';\r\n\r\nexport class ApiFactory {\r\n    static createBillApi() {\r\n        const useMock = ENV.USE_MOCK_API;\r\n        console.log('ApiFactory creating BillApi. Using mock:', useMock);\r\n        return useMock ? new MockBillApi() : new BillApi();\r\n    }\r\n\r\n    static createQuoteApi() {\r\n        return ENV.USE_MOCK_API ? new MockQuoteApi() : new QuoteApi();\r\n    }\r\n}\r\n"
+        }
+    ]
+}

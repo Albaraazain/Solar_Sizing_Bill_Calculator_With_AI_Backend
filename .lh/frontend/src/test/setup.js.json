@@ -1,0 +1,22 @@
+{
+    "sourceFile": "frontend/src/test/setup.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1733438798421,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733438895559,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,39 @@\n+import {beforeEach, jest, expect} from '@jest/globals';\r\n+\r\n+// Global test setup\r\n+beforeEach(() => {\r\n+    // Clear all mocks before each test\r\n+    jest.clearAllMocks();\r\n+});\r\n+\r\n+// Mock ENV\r\n+globalThis.ENV = {\r\n+    DEBUG: true,\r\n+    API_URL: 'http://localhost:3000',\r\n+    VERSION: 'test'\r\n+};\r\n+\r\n+// Add custom matchers if needed\r\n+expect.extend({\r\n+    toBeWithinRange(received, floor, ceiling) {\r\n+        const pass = received >= floor && received <= ceiling;\r\n+        if (pass) {\r\n+            return {\r\n+                message: () => `expected ${received} not to be within range ${floor} - ${ceiling}`,\r\n+                pass: true\r\n+            };\r\n+        } else {\r\n+            return {\r\n+                message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,\r\n+                pass: false\r\n+            };\r\n+        }\r\n+    }\r\n+});\r\n+\r\n+// Export utilities\r\n+export const createMockEventBus = () => ({\r\n+    subscribe: jest.fn(),\r\n+    publish: jest.fn(),\r\n+    clear: jest.fn()\r\n+});\r\n"
+                }
+            ],
+            "date": 1733438798421,
+            "name": "Commit-0",
+            "content": "import {beforeEach, jest, expect} from '@jest/globals';\r\n\r\n// Global test setup\r\nbeforeEach(() => {\r\n    // Clear all mocks before each test\r\n    jest.clearAllMocks();\r\n});\r\n\r\n// Mock ENV\r\nglobalThis.ENV = {\r\n    DEBUG: true,\r\n    API_URL: 'http://localhost:3000',\r\n    VERSION: 'test'\r\n};\r\n\r\n// Add custom matchers if needed\r\nexpect.extend({\r\n    toBeWithinRange(received, floor, ceiling) {\r\n        const pass = received >= floor && received <= ceiling;\r\n        if (pass) {\r\n            return {\r\n                message: () => `expected ${received} not to be within range ${floor} - ${ceiling}`,\r\n                pass: true\r\n            };\r\n        } else {\r\n            return {\r\n                message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,\r\n                pass: false\r\n            };\r\n        }\r\n    }\r\n});\r\n\r\n// Export utilities\r\nexport const createMockEventBus = () => ({\r\n    subscribe: jest.fn(),\r\n    publish: jest.fn(),\r\n    clear: jest.fn()\r\n});\r\n"
+        }
+    ]
+}

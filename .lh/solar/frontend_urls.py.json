@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/frontend_urls.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733428033100,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733428033100,
+            "name": "Commit-0",
+            "content": "# solar/frontend_urls.py\r\nfrom django.urls import path\r\nfrom .views.public_views import IndexView, QuotationView\r\n\r\nurlpatterns = [\r\n    path('', IndexView.as_view(), name='index'),\r\n    path('bill-review/', IndexView.as_view(), name='bill-review'),\r\n    path('quote/', IndexView.as_view(), name='quote'),\r\n    path('quotation/', QuotationView.as_view(), name='quotation'),\r\n]"
+        }
+    ]
+}

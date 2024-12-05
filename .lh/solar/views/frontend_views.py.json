@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/views/frontend_views.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733432746523,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733432746523,
+            "name": "Commit-0",
+            "content": "# solar/views/frontend_views.py\r\nfrom django.views.generic import TemplateView\r\nfrom django.conf import settings\r\n\r\nclass SPAView(TemplateView):\r\n    \"\"\"\r\n    Base view to serve the frontend SPA.\r\n    All frontend routes will be handled by the JavaScript router.\r\n    \"\"\"\r\n    template_name = 'index.html'\r\n\r\n    def get_context_data(self, **kwargs):\r\n        context = super().get_context_data(**kwargs)\r\n        context.update({\r\n            'api_url': settings.API_URL,\r\n            'debug': settings.DEBUG,\r\n        })\r\n        return context"
+        }
+    ]
+}

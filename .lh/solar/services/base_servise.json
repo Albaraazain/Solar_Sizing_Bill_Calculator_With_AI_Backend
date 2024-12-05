@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/services/base_servise",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733410884099,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733410884099,
+            "name": "Commit-0",
+            "content": "# solar/services/base_service.py\r\nfrom typing import Any, Dict, List, Optional\r\nfrom ..middleware.error_handler import AppError\r\n\r\nclass BaseService:\r\n    \"\"\"Base class for all services providing common functionality.\"\"\"\r\n    \r\n    @staticmethod\r\n    def handle_error(error: Exception, code: str, message: Optional[str] = None) -> None:\r\n        \"\"\"\r\n        Standardized error handling for services.\r\n        \r\n        Args:\r\n            error: The exception that occurred\r\n            code: Error code for categorizing the error\r\n            message: Optional custom error message\r\n        \r\n        Raises:\r\n            AppError: Standardized application error\r\n        \"\"\"\r\n        if isinstance(error, AppError):\r\n            raise error\r\n            \r\n        raise AppError(\r\n            message=message or str(error),\r\n            code=code,\r\n            data={'original_error': str(error)}\r\n        )\r\n\r\n    @staticmethod\r\n    def validate_data(data: Dict[str, Any], required_fields: List[str]) -> None:\r\n        \"\"\"\r\n        Validate that all required fields are present in data.\r\n        \r\n        Args:\r\n            data: Dictionary containing data to validate\r\n            required_fields: List of field names that must be present\r\n            \r\n        Raises:\r\n            AppError: If any required fields are missing\r\n        \"\"\"\r\n        missing_fields = [field for field in required_fields if field not in data]\r\n        if missing_fields:\r\n            raise AppError(\r\n                message='Missing required fields',\r\n                code='VALIDATION_ERROR',\r\n                data={'missing_fields': missing_fields}\r\n            )\r\n            \r\n    @staticmethod \r\n    def format_response(data: Any, message: Optional[str] = None) -> Dict[str, Any]:\r\n        \"\"\"\r\n        Format standard response structure.\r\n        \r\n        Args:\r\n            data: Response data to format\r\n            message: Optional success message\r\n            \r\n        Returns:\r\n            Dict containing formatted response\r\n        \"\"\"\r\n        response = {\r\n            'success': True,\r\n            'data': data\r\n        }\r\n        if message:\r\n            response['message'] = message\r\n            "
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/vite.config.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733433379265,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733433379265,
+            "name": "Commit-0",
+            "content": "// frontend/vite.config.js\r\nimport { defineConfig } from 'vite';\r\n\r\nexport default defineConfig({\r\n    build: {\r\n        cssMinify: 'lightningcss',\r\n        outDir: 'dist',\r\n        assetsDir: 'assets',\r\n        // Add manifest for Django\r\n        manifest: true,\r\n        rollupOptions: {\r\n            output: {\r\n                manualChunks: undefined\r\n            }\r\n        }\r\n    },\r\n    server: {\r\n        port: 3000,\r\n        open: true,\r\n        proxy: {\r\n            '/api': {\r\n                target: 'http://localhost:8000',\r\n                changeOrigin: true,\r\n                secure: false,\r\n            }\r\n        }\r\n    },\r\n    resolve: {\r\n        alias: {\r\n            '@': '/src'\r\n        }\r\n    },\r\n    define: {\r\n        __VUE_PROD_DEVTOOLS__: false,\r\n    }\r\n});"
+        }
+    ]
+}

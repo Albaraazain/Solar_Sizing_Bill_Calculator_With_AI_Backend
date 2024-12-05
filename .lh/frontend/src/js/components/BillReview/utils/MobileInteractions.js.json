@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/src/js/components/BillReview/utils/MobileInteractions.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733438797040,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733438797040,
+            "name": "Commit-0",
+            "content": "import gsap from 'gsap';\r\n\r\nexport function initializeMobileInteractions(container) {\r\n    let startY = 0;\r\n    let currentY = 0;\r\n    const initialHeight = '60vh';\r\n    const expandedHeight = '92vh';\r\n\r\n    function handleTouchStart(e) {\r\n        startY = e.touches[0].clientY;\r\n        currentY = container.getBoundingClientRect().height;\r\n    }\r\n\r\n    function handleTouchMove(e) {\r\n        const deltaY = startY - e.touches[0].clientY;\r\n        const newHeight = Math.max(\r\n            Math.min(currentY + deltaY, window.innerHeight * 0.92),\r\n            window.innerHeight * 0.3\r\n        );\r\n\r\n        gsap.to(container, {\r\n            height: newHeight,\r\n            duration: 0.1,\r\n            ease: 'none'\r\n        });\r\n    }\r\n\r\n    function handleTouchEnd() {\r\n        const finalHeight = container.getBoundingClientRect().height;\r\n        const threshold = window.innerHeight * 0.6;\r\n\r\n        gsap.to(container, {\r\n            height: finalHeight > threshold ? expandedHeight : initialHeight,\r\n            duration: 0.3,\r\n            ease: 'power2.out'\r\n        });\r\n    }\r\n\r\n    const dragHandle = container.querySelector('.drag-handle');\r\n    if (dragHandle) {\r\n        dragHandle.addEventListener('touchstart', handleTouchStart);\r\n        dragHandle.addEventListener('touchmove', handleTouchMove);\r\n        dragHandle.addEventListener('touchend', handleTouchEnd);\r\n    }\r\n\r\n    return () => {\r\n        if (dragHandle) {\r\n            dragHandle.removeEventListener('touchstart', handleTouchStart);\r\n            dragHandle.removeEventListener('touchmove', handleTouchMove);\r\n            dragHandle.removeEventListener('touchend', handleTouchEnd);\r\n        }\r\n    };\r\n}\r\n"
+        }
+    ]
+}

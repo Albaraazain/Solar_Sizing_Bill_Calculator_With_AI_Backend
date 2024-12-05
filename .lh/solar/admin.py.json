@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1728483914021,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733415331182,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n from django.contrib import admin\n-from .models import Panel, Inverter, PotentialCustomers, variableCosts, BracketCosts\n+from .models import Panel, Inverter, PotentialCustomers, VariableCosts, BracketCosts\n \n class PanelAdmin(admin.ModelAdmin):\n     list_display = ('brand', 'price', 'power')\n     \n@@ -9,9 +9,9 @@\n     \n class PotentialCustomersAdmin(admin.ModelAdmin):\n     list_display = ('name', 'phone', 'reference_number')    \n \n-class variableCostsAdmin(admin.ModelAdmin):\n+class VariableCostsAdmin(admin.ModelAdmin):\n     list_display = ('cost_name', 'cost')\n \n class BracketCostsAdmin(admin.ModelAdmin):\n     list_display = ('Type', 'SystemRange', 'cost')\n@@ -19,6 +19,6 @@\n # Register your models here.\n admin.site.register(Panel, PanelAdmin)\n admin.site.register(Inverter, InverterAdmin)\n admin.site.register(PotentialCustomers, PotentialCustomersAdmin)\n-admin.site.register(variableCosts, variableCostsAdmin)\n+admin.site.register(VariableCosts, VariableCostsAdmin)\n admin.site.register(BracketCosts, BracketCostsAdmin)\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1728483914021,

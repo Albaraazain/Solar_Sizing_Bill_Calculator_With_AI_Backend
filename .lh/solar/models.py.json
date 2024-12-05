@@ -1,0 +1,38 @@
+{
+    "sourceFile": "solar/models.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 5,
+            "patches": [
+                {
+                    "date": 1733414339257,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733428574710,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,5 +27,19 @@\n \n class BracketCosts(models.Model):\n     Type = models.CharField(max_length=15)\n     SystemRange = models.IntegerField()\n-    cost = models.DecimalField(max_digits=10, decimal_places=2)\n\\ No newline at end of file\n+    cost = models.DecimalField(max_digits=10, decimal_places=2)\n+    \n+class Bill(models.Model):\n+    reference_number = models.CharField(max_length=100)\n+    customer_name = models.CharField(max_length=200)\n+    amount = models.DecimalField(max_digits=10, decimal_places=2)\n+    units_consumed = models.IntegerField()\n+    issue_date = models.DateField()\n+    due_date = models.DateField()\n+    \n+class Quote(models.Model):\n+    bill = models.ForeignKey(Bill, on_delete=models.CASCADE)\n+    system_size = models.DecimalField(max_digits=5, decimal_places=2)\n+    total_cost = models.DecimalField(max_digits=10, decimal_places=2)\n+    created_at = models.DateTimeField(auto_now_add=True)\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1733429992297,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -41,5 +41,33 @@\n class Quote(models.Model):\n     bill = models.ForeignKey(Bill, on_delete=models.CASCADE)\n     system_size = models.DecimalField(max_digits=5, decimal_places=2)\n     total_cost = models.DecimalField(max_digits=10, decimal_places=2)\n-    created_at = models.DateTimeField(auto_now_add=True)\n\\ No newline at end of file\n+    created_at = models.DateTimeField(auto_now_add=True)\n+\n+class Document(models.Model):\n+    name = models.CharField(max_length=255)\n+    type = models.CharField(max_length=50)  # quote, agreement, invoice, report\n+    path = models.CharField(max_length=512)\n+    url = models.URLField(max_length=512)\n+    size = models.IntegerField(default=0)\n+    created_at = models.DateTimeField(auto_now_add=True)\n+    modified_at = models.DateTimeField(auto_now=True)\n+    reference_number = models.CharField(max_length=100, null=True, blank=True)\n+    metadata = models.JSONField(default=dict, blank=True)\n+\n+    class Meta:\n+        ordering = ['-created_at']\n+\n+    def to_dict(self):\n+        return {\n+            'id': self.id,\n+            'name': self.name,\n+            'type': self.type,\n+            'path': self.path,\n+            'url': self.url,\n+            'size': self.size,\n+            'created_at': self.created_at.isoformat(),\n+            'modified_at': self.modified_at.isoformat(),\n+            'reference_number': self.reference_number,\n+            'metadata': self.metadata\n+        }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1733430105389,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -44,8 +44,9 @@\n     total_cost = models.DecimalField(max_digits=10, decimal_places=2)\n     created_at = models.DateTimeField(auto_now_add=True)\n \n class Document(models.Model):\n+    id = models.AutoField(primary_key=True)\n     name = models.CharField(max_length=255)\n     type = models.CharField(max_length=50)  # quote, agreement, invoice, report\n     path = models.CharField(max_length=512)\n     url = models.URLField(max_length=512)\n"
+                },
+                {
+                    "date": 1733430307023,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -38,8 +38,9 @@\n     issue_date = models.DateField()\n     due_date = models.DateField()\n     \n class Quote(models.Model):\n+    id = models.AutoField(primary_key=True)  # Add this line\n     bill = models.ForeignKey(Bill, on_delete=models.CASCADE)\n     system_size = models.DecimalField(max_digits=5, decimal_places=2)\n     total_cost = models.DecimalField(max_digits=10, decimal_places=2)\n     created_at = models.DateTimeField(auto_now_add=True)\n"
+                },
+                {
+                    "date": 1733431510862,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -18,8 +18,9 @@\n     cost_name = models.CharField(max_length=100)\n     cost = models.DecimalField(max_digits=10, decimal_places=2)\n     \n class PotentialCustomers(models.Model):\n+    id = models.AutoField(primary_key=True)  # Add this line\n     name = models.CharField(max_length=15)\n     phone = models.CharField(max_length=11)\n     address = models.TextField()\n     reference_number = models.CharField(max_length=14)\n"
+                }
+            ],
+            "date": 1733414339257,
+            "name": "Commit-0",
+            "content": "from django.db import models\nfrom datetime import datetime\n# Create your models here.\nclass Panel(models.Model):\n    brand = models.CharField(max_length=100)\n    price = models.DecimalField(max_digits=10, decimal_places=2)\n    power = models.DecimalField(max_digits=10, decimal_places=2)\n    default_choice = models.BooleanField(default=False)\n    availability = models.BooleanField(default=True)\n    \nclass Inverter(models.Model):\n    brand = models.CharField(max_length=100)\n    price = models.DecimalField(max_digits=10, decimal_places=2)\n    power = models.DecimalField(max_digits=10, decimal_places=2)\n    availability = models.BooleanField(default=True)\n\nclass VariableCosts(models.Model):\n    cost_name = models.CharField(max_length=100)\n    cost = models.DecimalField(max_digits=10, decimal_places=2)\n    \nclass PotentialCustomers(models.Model):\n    name = models.CharField(max_length=15)\n    phone = models.CharField(max_length=11)\n    address = models.TextField()\n    reference_number = models.CharField(max_length=14)\n    date = models.DateTimeField(default=datetime.now)\n\nclass BracketCosts(models.Model):\n    Type = models.CharField(max_length=15)\n    SystemRange = models.IntegerField()\n    cost = models.DecimalField(max_digits=10, decimal_places=2)"
+        }
+    ]
+}

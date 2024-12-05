@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/src/api/client/axiosClient.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733436853879,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733436853879,
+            "name": "Commit-0",
+            "content": "// src/api/client/axiosClient.js\r\nimport axios from 'axios';\r\nimport { API_CONFIG } from './apiConfig.js';\r\nimport { eventBus } from '../../core/events/EventBus.js';\r\nimport { ErrorHandler } from '../../core/utils/ErrorHandler.js';\r\n\r\nconst getStorageItem = (key) => {\r\n    try {\r\n        return localStorage.getItem(key);\r\n    } catch (error) {\r\n        console.warn('localStorage not available:', error);\r\n        return null;\r\n    }\r\n};\r\n\r\nconst axiosClient = axios.create({\r\n    baseURL: API_CONFIG.BASE_URL,\r\n    timeout: API_CONFIG.TIMEOUT,\r\n    headers: API_CONFIG.HEADERS\r\n});\r\n\r\n// // Request interceptor\r\n// axiosClient.interceptors.request.use(\r\n//     config => {\r\n//         const token = getStorageItem('token');\r\n//         if (token) {\r\n//             config.headers.Authorization = `Bearer ${token}`;\r\n//         }\r\n//         return config;\r\n//     },\r\n//     error => {\r\n//         ErrorHandler.handle(error);\r\n//         return Promise.reject(error);\r\n//     }\r\n// );\r\n\r\n// // Response interceptor\r\n// axiosClient.interceptors.response.use(\r\n//     response => response.data,\r\n//     error => {\r\n//         const { response } = error;\r\n\r\n//         if (response?.status === 401) {\r\n//             eventBus.publish('auth:unauthorized');\r\n//         }\r\n\r\n//         ErrorHandler.handle(error);\r\n//         return Promise.reject(error);\r\n//     }\r\n// );\r\n\r\n\r\n// Add request interceptor for debugging\r\naxiosClient.interceptors.request.use(\r\n    config => {\r\n        console.log('Making request:', {\r\n            url: config.url,\r\n            method: config.method,\r\n            baseURL: config.baseURL,\r\n            data: config.data\r\n        });\r\n        return config;\r\n    },\r\n    error => {\r\n        console.error('Request error:', error);\r\n        return Promise.reject(error);\r\n    }\r\n);\r\n\r\n// Add response interceptor for debugging\r\naxiosClient.interceptors.response.use(\r\n    response => {\r\n        console.log('Received response:', response);\r\n        return response.data;\r\n    },\r\n    error => {\r\n        console.error('Response error:', error);\r\n        if (error.response) {\r\n            console.error('Error response:', error.response.data);\r\n        }\r\n        return Promise.reject(error);\r\n    }\r\n);\r\n\r\nexport default axiosClient;\r\n"
+        }
+    ]
+}
