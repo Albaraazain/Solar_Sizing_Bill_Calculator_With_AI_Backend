@@ -20,35 +20,36 @@ from bs4 import BeautifulSoup
 
 class BillValidateAPIView(APIView):
     def post(self, request):
-        # Log the incoming request data
-        print(f"Request Data: {request.data}")
-
-        reference_number = request.data.get("referenceNumber")
+        reference_number = request.data.get("reference_number")
         if not reference_number:
             return Response({
-                "status": "error",
-                "message": "Reference number is required.",
-                "isValid": False
+                "success": False,
+                "data": {
+                    "isValid": False,
+                    "message": "Reference number is required"
+                }
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Call the verify_bill function to check the status
-        status_result = verify_bill(reference_number)
-        
-        if status_result['exists']:
-            print(f"Bill is valid. Source URL: {status_result.get('source_url', '')}")
+        try:
+            # Verify bill using existing function
+            result = verify_bill(reference_number)
+            
             return Response({
-                "status": "success",
-                "message": "Bill is valid.",
-                "reference_number": reference_number,
-                "isValid": True,
-                "source_url": status_result.get("source_url", "")
+                "success": True,
+                "data": {
+                    "isValid": result['exists'],
+                    "referenceNumber": reference_number,
+                    "message": "Bill validation successful"
+                }
             }, status=status.HTTP_200_OK)
-        else:
+        except Exception as e:
             return Response({
-                "status": "error",
-                "message": status_result.get("message", "Bill not found."),
-                "isValid": False
-            }, status=status.HTTP_400_BAD_REQUEST)
+                "success": False,
+                "data": {
+                    "isValid": False,
+                    "message": str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GetBillDataAPIView(APIView):
     def get(self, request, reference_number):
