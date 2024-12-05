@@ -1,0 +1,22 @@
+{
+    "sourceFile": "EnergyCove/urls.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1733401751450,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733402098426,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,22 @@\n+from django.urls import path\n+\n+from solar import views\n+\n+app_name = 'solar'\n+\n+urlpatterns = [\n+    path('bill/validate/', views.validate_reference, name='validate_reference'),\n+    path('bill/details/<str:reference_number>/', views.get_bill_details, name='get_bill_details'),\n+    path('bill/analyze/', views.analyze_bill, name='analyze_bill'),\n+    path('bill/history/<str:reference_number>/', views.get_bill_history, name='bill_history'),\n+    path('quote/generate/', views.generate_quote, name='generate_quote'),\n+    path('quote/details/<str:quote_id>/', views.get_quote_details, name='quote_details'),\n+]\n+\n+# EnergyCove/urls.py\n+from django.urls import path, include\n+\n+urlpatterns = [\n+    path('api/', include('solar.urls')),\n+    path('', include('solar.frontend_urls')),  # For serving frontend\n+]\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1733401751450,
+            "name": "Commit-0",
+            "content": "from django.urls import path\nfrom . import views\n\napp_name = 'solar'\n\nurlpatterns = [\n    path('bill/validate/', views.validate_reference, name='validate_reference'),\n    path('bill/details/<str:reference_number>/', views.get_bill_details, name='get_bill_details'),\n    path('bill/analyze/', views.analyze_bill, name='analyze_bill'),\n    path('bill/history/<str:reference_number>/', views.get_bill_history, name='bill_history'),\n    path('quote/generate/', views.generate_quote, name='generate_quote'),\n    path('quote/details/<str:quote_id>/', views.get_quote_details, name='quote_details'),\n]\n\n# EnergyCove/urls.py\nfrom django.urls import path, include\n\nurlpatterns = [\n    path('api/', include('solar.urls')),\n    path('', include('solar.frontend_urls')),  # For serving frontend\n]"
+        }
+    ]
+}

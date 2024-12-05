@@ -1,0 +1,18 @@
+{
+    "sourceFile": "fronend/src/api/client/apiConfig.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733401729246,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733401729246,
+            "name": "Commit-0",
+            "content": "// src/api/client/apiConfig.js\r\nexport const API_CONFIG = {\r\n    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',\r\n    TIMEOUT: 10000,\r\n    ENDPOINTS: {\r\n        BILL: {\r\n            BASE: '/bill',\r\n            ANALYZE: '/bill/analyze',\r\n            GET: '/bill/details',\r\n            VALIDATE: '/bill/validate',\r\n            HISTORY: '/bill/history'\r\n        },\r\n        QUOTE: {\r\n            BASE: '/quote',\r\n            GENERATE: '/quote/generate',\r\n            GET: '/quote/details'\r\n        }\r\n    },\r\n    HEADERS: {\r\n        'Content-Type': 'application/json',\r\n        'Accept': 'application/json'\r\n    }\r\n};\r\n\r\nexport const HTTP_STATUS = {\r\n    OK: 200,\r\n    CREATED: 201,\r\n    BAD_REQUEST: 400,\r\n    UNAUTHORIZED: 401,\r\n    FORBIDDEN: 403,\r\n    NOT_FOUND: 404,\r\n    INTERNAL_SERVER_ERROR: 500\r\n};\r\n"
+        }
+    ]
+}
