@@ -38,6 +38,14 @@ class PanelViewSet(IsStaffMixin, viewsets.ModelViewSet):
     queryset = Panel.objects.all()
     serializer_class = PanelSerializer
 
+    def create(self, request, *args, **kwargs):
+        with transaction.atomic():
+            # If this is the first panel, make it default
+            if not Panel.objects.exists():
+                request.data['default_choice'] = True
+            response = super().create(request, *args, **kwargs)
+            return response
+
     def get_queryset(self):
         queryset = Panel.objects.all()
         request = cast(Request, self.request)
@@ -74,6 +82,16 @@ class PanelViewSet(IsStaffMixin, viewsets.ModelViewSet):
             raise AppError(
                 message='Failed to set default panel', code=ErrorTypes.SERVER_ERROR
             ) from e
+
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            # If deleting default panel, set another one as default if exists
+            if instance.default_choice:
+                other_panel = Panel.objects.exclude(pk=instance.pk).first()
+                if (other_panel):
+                    other_panel.default_choice = True
+                    other_panel.save()
+            instance.delete()
 
 class InverterViewSet(IsStaffMixin, viewsets.ModelViewSet):
     """ViewSet for managing inverters."""

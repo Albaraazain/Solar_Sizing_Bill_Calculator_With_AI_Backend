@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 10,
             "patches": [
                 {
                     "date": 1733414339257,
@@ -28,6 +28,26 @@
                 {
                     "date": 1733431510862,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -18,8 +18,9 @@\n     cost_name = models.CharField(max_length=100)\n     cost = models.DecimalField(max_digits=10, decimal_places=2)\n     \n class PotentialCustomers(models.Model):\n+    id = models.AutoField(primary_key=True)  # Add this line\n     name = models.CharField(max_length=15)\n     phone = models.CharField(max_length=11)\n     address = models.TextField()\n     reference_number = models.CharField(max_length=14)\n"
+                },
+                {
+                    "date": 1733447533442,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,8 @@\n from django.db import models\n from datetime import datetime\n+from decimal import Decimal\n+\n # Create your models here.\n class Panel(models.Model):\n     brand = models.CharField(max_length=100)\n     price = models.DecimalField(max_digits=10, decimal_places=2)\n@@ -26,11 +28,44 @@\n     reference_number = models.CharField(max_length=14)\n     date = models.DateTimeField(default=datetime.now)\n \n class BracketCosts(models.Model):\n-    Type = models.CharField(max_length=15)\n-    SystemRange = models.IntegerField()\n-    cost = models.DecimalField(max_digits=10, decimal_places=2)\n+    \"\"\"Cost brackets for different system sizes.\"\"\"\n+    min_size = models.DecimalField(\n+        max_digits=5, \n+        decimal_places=2,\n+        help_text=\"Minimum system size in kW\"\n+    )\n+    max_size = models.DecimalField(\n+        max_digits=5, \n+        decimal_places=2,\n+        help_text=\"Maximum system size in kW\"\n+    )\n+    dc_cable = models.DecimalField(\n+        max_digits=10, \n+        decimal_places=2,\n+        help_text=\"DC cable cost for this bracket\"\n+    )\n+    ac_cable = models.DecimalField(\n+        max_digits=10, \n+        decimal_places=2,\n+        help_text=\"AC cable cost for this bracket\"\n+    )\n+    accessories = models.DecimalField(\n+        max_digits=10, \n+        decimal_places=2,\n+        help_text=\"Accessories cost for this bracket\"\n+    )\n+    created_at = models.DateTimeField(auto_now_add=True)\n+    updated_at = models.DateTimeField(auto_now=True)\n+\n+    class Meta:\n+        verbose_name = \"Bracket Cost\"\n+        verbose_name_plural = \"Bracket Costs\"\n+        unique_together = ('min_size', 'max_size')\n+\n+    def __str__(self):\n+        return f\"Size: {self.min_size}kW - {self.max_size}kW\"\n     \n class Bill(models.Model):\n     reference_number = models.CharField(max_length=100)\n     customer_name = models.CharField(max_length=200)\n"
+                },
+                {
+                    "date": 1733447640832,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,28 +32,33 @@\n     \"\"\"Cost brackets for different system sizes.\"\"\"\n     min_size = models.DecimalField(\n         max_digits=5, \n         decimal_places=2,\n+        default=0,\n         help_text=\"Minimum system size in kW\"\n     )\n     max_size = models.DecimalField(\n         max_digits=5, \n         decimal_places=2,\n+        default=999,\n         help_text=\"Maximum system size in kW\"\n     )\n     dc_cable = models.DecimalField(\n         max_digits=10, \n         decimal_places=2,\n+        default=15000,\n         help_text=\"DC cable cost for this bracket\"\n     )\n     ac_cable = models.DecimalField(\n         max_digits=10, \n         decimal_places=2,\n+        default=10000,\n         help_text=\"AC cable cost for this bracket\"\n     )\n     accessories = models.DecimalField(\n         max_digits=10, \n         decimal_places=2,\n+        default=20000,\n         help_text=\"Accessories cost for this bracket\"\n     )\n     created_at = models.DateTimeField(auto_now_add=True)\n     updated_at = models.DateTimeField(auto_now=True)\n"
+                },
+                {
+                    "date": 1733447666673,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -38,27 +38,27 @@\n     )\n     max_size = models.DecimalField(\n         max_digits=5, \n         decimal_places=2,\n-        default=999,\n+        default=Decimal('999.00'),\n         help_text=\"Maximum system size in kW\"\n     )\n     dc_cable = models.DecimalField(\n         max_digits=10, \n         decimal_places=2,\n-        default=15000,\n+        default=Decimal('15000.00'),\n         help_text=\"DC cable cost for this bracket\"\n     )\n     ac_cable = models.DecimalField(\n         max_digits=10, \n         decimal_places=2,\n-        default=10000,\n+        default=Decimal('10000.00'),\n         help_text=\"AC cable cost for this bracket\"\n     )\n     accessories = models.DecimalField(\n         max_digits=10, \n         decimal_places=2,\n-        default=20000,\n+        default=Decimal('20000.00'),\n         help_text=\"Accessories cost for this bracket\"\n     )\n     created_at = models.DateTimeField(auto_now_add=True)\n     updated_at = models.DateTimeField(auto_now=True)\n"
+                },
+                {
+                    "date": 1733447674863,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,9 +32,9 @@\n     \"\"\"Cost brackets for different system sizes.\"\"\"\n     min_size = models.DecimalField(\n         max_digits=5, \n         decimal_places=2,\n-        default=0,\n+        default=Decimal('0.00'),\n         help_text=\"Minimum system size in kW\"\n     )\n     max_size = models.DecimalField(\n         max_digits=5, \n"
+                },
+                {
+                    "date": 1733447773522,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -59,10 +59,18 @@\n         decimal_places=2,\n         default=Decimal('20000.00'),\n         help_text=\"Accessories cost for this bracket\"\n     )\n-    created_at = models.DateTimeField(auto_now_add=True)\n-    updated_at = models.DateTimeField(auto_now=True)\n+    created_at = models.DateTimeField(\n+        auto_now_add=True,\n+        null=True,  # Allow null temporarily\n+        blank=True\n+    )\n+    updated_at = models.DateTimeField(\n+        auto_now=True,\n+        null=True,  # Allow null temporarily\n+        blank=True\n+    )\n \n     class Meta:\n         verbose_name = \"Bracket Cost\"\n         verbose_name_plural = \"Bracket Costs\"\n"
                 }
             ],
             "date": 1733414339257,

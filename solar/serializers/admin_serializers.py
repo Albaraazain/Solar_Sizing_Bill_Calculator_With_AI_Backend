@@ -1,8 +1,12 @@
 # path: solar/serializers/admin_serializers.py
 from rest_framework import serializers
-from ..models import Panel, Inverter, PotentialCustomers
+from decimal import Decimal
+from ..models import Panel, Inverter, BracketCosts, VariableCosts, PotentialCustomers
 
 class PanelSerializer(serializers.ModelSerializer):
+    power = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))
+
     class Meta:
         model = Panel
         fields = ['id', 'brand', 'power', 'price', 'default_choice', 'availability']

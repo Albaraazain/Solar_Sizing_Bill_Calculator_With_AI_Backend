@@ -9,15 +9,35 @@ export class QuoteApi extends BaseApiService {
     
     async generateQuote(billData) {
         try {
-            console.log('Generating quote for bill data:', billData);
-            const response = await this.post(API_CONFIG.ENDPOINTS.QUOTE.GENERATE, billData);
+            console.log('Raw bill data received:', billData);
+            
+            // Format bill data
+            const formattedData = this.formatBillData(billData);
+            console.log('Formatted data before API call:', formattedData);
+            
+            // Log the exact request configuration
+            console.log('Quote generation request config:', {
+                url: `${API_CONFIG.ENDPOINTS.QUOTE.GENERATE}`,
+                method: 'POST',
+                data: formattedData
+            });
+    
+            const response = await this.post(
+                API_CONFIG.ENDPOINTS.QUOTE.GENERATE,
+                formattedData
+            );
+            
             return response;
         } catch (error) {
-            console.error('Error generating quote:', error);
+            console.error('Error generating quote:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                fullError: error
+            });
             throw error;
         }
     }
-
     async getQuoteById(quoteId) {
         try {
             const url = `${API_CONFIG.ENDPOINTS.QUOTE.GET}${quoteId}/`;
@@ -52,6 +72,51 @@ export class QuoteApi extends BaseApiService {
             throw error;
         }
     }
+
+    formatBillData(billData) {
+        // Handle nested data structure
+        const data = billData.data || billData;
+    
+        // Format dates to ISO format
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '';
+            try {
+                return new Date(dateStr).toISOString().split('T')[0];
+            } catch (e) {
+                console.error('Date parsing error:', e);
+                return dateStr;
+            }
+        };
+    
+        // Format the bill data
+        const formatted = {
+            reference_number: String(data.reference_number || data.referenceNumber || '').trim(),
+            units_consumed: Number(data['Units Consumed'] || data.unitsConsumed || 0),
+            amount: Number(data['Payable Within Due Date'] || data.amount || 0),
+            total_yearly_units: Number(data['Total Yearly Units'] || data.totalYearlyUnits || 0),
+            customer_name: String(data['Name'] || data.customerName || ''),
+            issue_date: formatDate(data['Issue Date'] || data.issueDate),
+            due_date: formatDate(data['Due Date'] || data.dueDate)
+        };
+    
+        // Add debug logging
+        console.log('Formatted data for quote generation:', formatted);
+    
+        // Validate required fields
+        const requiredFields = ['reference_number', 'units_consumed', 'amount', 'total_yearly_units'];
+        const missingFields = requiredFields.filter(field => 
+            !formatted[field] || 
+            (typeof formatted[field] === 'number' && 
+            (isNaN(formatted[field]) || formatted[field] <= 0))
+        );
+    
+        if (missingFields.length > 0) {
+            throw new Error(`Missing or invalid required fields: ${missingFields.join(', ')}`);
+        }
+    
+        return formatted;
+    }
+
 }
 
 export const quoteApi = new QuoteApi();

@@ -3,10 +3,13 @@ from typing import Dict, Any, List, Optional, NoReturn
 from decimal import Decimal
 from django.db import transaction
 from django.db.models import Q
+import logging
 
 from .base_service import BaseService
 from ..models import Panel, Inverter, VariableCosts, BracketCosts
 from ..middleware.error_handler import AppError
+
+logger = logging.getLogger(__name__)
 
 class InventoryService(BaseService):
     """Service for managing solar system inventory and costs."""
@@ -192,17 +195,40 @@ class InventoryService(BaseService):
 
     @classmethod
     def get_price_configuration(cls) -> Dict[str, float]:
-        """Get current price configuration."""
+        """Get current price configuration with fallbacks."""
         try:
+            logger.info("Fetching price configuration")
             costs = VariableCosts.objects.all()
-            return {
-                cost.cost_name: float(cost.cost)
-                for cost in costs
+            config = {}
+
+            # Required costs with defaults
+            required_costs = {
+                'Net Metering': '50000.00',
+                'Installation Cost per Watt': '10.00',
+                'Frame Cost per Watt': '8.00',
+                'Labor Cost': '5000.00'
             }
 
+            # Get existing costs
+            for cost in costs:
+                config[cost.cost_name] = float(cost.cost)
+
+            # Add missing costs with defaults
+            for name, default_value in required_costs.items():
+                if name not in config:
+                    logger.warning(f"Missing cost configuration for {name}, using default")
+                    config[name] = float(Decimal(default_value))
+
+            logger.info(f"Retrieved costs configuration: {config}")
+            return config
+
         except Exception as e:
-            cls.handle_service_error(e, 'CONFIG_FETCH_ERROR', 'Failed to fetch price configuration')
-            raise  # This will never be reached but satisfies type checker
+            logger.exception("Error fetching price configuration")
+            raise AppError(
+                message='Failed to fetch price configuration',
+                code='CONFIG_FETCH_ERROR',
+                data={'error': str(e)}
+            )
 
     @classmethod
     @transaction.atomic
@@ -223,27 +249,43 @@ class InventoryService(BaseService):
 
     @classmethod
     def get_bracket_costs(cls, system_size: float) -> Dict[str, float]:
-        """Get appropriate bracket costs for system size."""
+        """Get bracket costs for given system size with error handling."""
         try:
-            costs = {}
-            for cost_type in ['DC Cables', 'AC Cables', 'Accessories']:
-                if not (bracket := BracketCosts.objects.filter(
-                    Type=cost_type,
-                    SystemRange__lte=system_size
-                ).order_by('-SystemRange').first()):
-                    raise AppError(
-                        message=f'No bracket cost found for {cost_type}',
-                        code='NOT_FOUND',
-                        data={'system_size': system_size}
-                    )
+            logger.info(f"Fetching bracket costs for system size: {system_size}kW")
+            
+            # Get the appropriate bracket cost
+            bracket = BracketCosts.objects.filter(
+                min_size__lte=system_size,
+                max_size__gte=system_size
+            ).first()
 
-                costs[cost_type.lower().replace(' ', '_')] = float(bracket.cost)
+            if not bracket:
+                logger.warning(f"No bracket found for size {system_size}kW, using default bracket")
+                # Get default bracket or create fallback values
+                bracket = BracketCosts.objects.first() or BracketCosts.objects.create(
+                    min_size=0,
+                    max_size=999,
+                    dc_cable=15000,  # Default values
+                    ac_cable=10000,
+                    accessories=20000
+                )
 
+            costs = {
+                'dc_cable': float(bracket.dc_cable),
+                'ac_cable': float(bracket.ac_cable),
+                'accessories': float(bracket.accessories)
+            }
+            
+            logger.info(f"Retrieved costs: {costs}")
             return costs
 
         except Exception as e:
-            cls.handle_service_error(e, 'BRACKET_FETCH_ERROR', 'Failed to fetch bracket costs')
-            raise  # To satisfy type checker
+            logger.exception("Error retrieving bracket costs")
+            raise AppError(
+                message='Failed to retrieve bracket costs',
+                code='COST_ERROR',
+                data={'error': str(e), 'system_size': system_size}
+            )
 
     @classmethod
     def get_inventory_stats(cls) -> Dict[str, Any]:

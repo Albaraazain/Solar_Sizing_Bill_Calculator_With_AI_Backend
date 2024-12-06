@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 9,
+            "activePatchIndex": 10,
             "patches": [
                 {
                     "date": 1733433926948,
@@ -44,6 +44,10 @@
                 {
                     "date": 1733440294412,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n // path: frontend/src/api/services/billApi.js\r\n import { BaseApiService } from '../base/BaseApiService.js';\r\n import { API_CONFIG } from '../client/apiConfig.js';\r\n+import { AppError } from '../../core/utils/ErrorHandler.js';\r\n \r\n export class BillApi extends BaseApiService {\r\n     constructor() {\r\n         super(API_CONFIG.ENDPOINTS.BILL.BASE);\r\n"
+                },
+                {
+                    "date": 1733442766659,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,27 +22,41 @@\n     \r\n     async validateReferenceNumber(referenceNumber) {\r\n         try {\r\n             console.log('Validating reference number:', referenceNumber);\r\n+            \r\n+            if (!referenceNumber) {\r\n+                throw new AppError('Please enter a reference number', 'VALIDATION_ERROR');\r\n+            }\r\n+    \r\n             const response = await this.post(\r\n                 API_CONFIG.ENDPOINTS.BILL.VALIDATE,\r\n                 { reference_number: referenceNumber }\r\n             );\r\n+    \r\n+            // Handle explicit error response from server\r\n+            if (!response.success && response.error) {\r\n+                throw new AppError(\r\n+                    response.error.message || 'Invalid reference number',\r\n+                    response.error.code || 'VALIDATION_ERROR'\r\n+                );\r\n+            }\r\n+    \r\n             return response;\r\n+    \r\n         } catch (error) {\r\n-            // Handle specific error cases\r\n-            if (error.code === 'NOT_FOUND') {\r\n+            // Handle axios error response\r\n+            if (error.response?.data?.error) {\r\n                 throw new AppError(\r\n-                    'Invalid reference number. Please check and try again.',\r\n-                    'VALIDATION_ERROR'\r\n+                    error.response.data.error.message || 'Invalid reference number',\r\n+                    error.response.data.error.code || 'VALIDATION_ERROR'\r\n                 );\r\n-            } else if (error.code === 'VALIDATION_ERROR') {\r\n-                throw new AppError(\r\n-                    'Please enter a valid 9-digit reference number.',\r\n-                    'VALIDATION_ERROR'\r\n-                );\r\n             }\r\n-            throw error;\r\n+            // Handle other errors\r\n+            throw new AppError(\r\n+                error.message || 'Failed to validate reference number',\r\n+                error.code || 'VALIDATION_ERROR'\r\n+            );\r\n         }\r\n     }\r\n     \r\n     async analyzeBill(referenceNumber) {\r\n"
                 }
             ],
             "date": 1733433926948,

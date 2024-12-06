@@ -23,25 +23,39 @@ export class BillApi extends BaseApiService {
     async validateReferenceNumber(referenceNumber) {
         try {
             console.log('Validating reference number:', referenceNumber);
+            
+            if (!referenceNumber) {
+                throw new AppError('Please enter a reference number', 'VALIDATION_ERROR');
+            }
+    
             const response = await this.post(
                 API_CONFIG.ENDPOINTS.BILL.VALIDATE,
                 { reference_number: referenceNumber }
             );
-            return response;
-        } catch (error) {
-            // Handle specific error cases
-            if (error.code === 'NOT_FOUND') {
+    
+            // Handle explicit error response from server
+            if (!response.success && response.error) {
                 throw new AppError(
-                    'Invalid reference number. Please check and try again.',
-                    'VALIDATION_ERROR'
-                );
-            } else if (error.code === 'VALIDATION_ERROR') {
-                throw new AppError(
-                    'Please enter a valid 9-digit reference number.',
-                    'VALIDATION_ERROR'
+                    response.error.message || 'Invalid reference number',
+                    response.error.code || 'VALIDATION_ERROR'
                 );
             }
-            throw error;
+    
+            return response;
+    
+        } catch (error) {
+            // Handle axios error response
+            if (error.response?.data?.error) {
+                throw new AppError(
+                    error.response.data.error.message || 'Invalid reference number',
+                    error.response.data.error.code || 'VALIDATION_ERROR'
+                );
+            }
+            // Handle other errors
+            throw new AppError(
+                error.message || 'Failed to validate reference number',
+                error.code || 'VALIDATION_ERROR'
+            );
         }
     }
     

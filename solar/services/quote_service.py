@@ -3,11 +3,13 @@ from typing import Dict, Any, List
 from decimal import Decimal
 import math
 from django.db import transaction
+import logging
 
 from .base_service import BaseService
 from .inventory_service import InventoryService
 from ..models import Bill, Panel, Inverter, Quote, VariableCosts, BracketCosts
 from ..middleware.error_handler import AppError
+logger = logging.getLogger(__name__)
 
 class QuoteService(BaseService):
     """Service for handling solar system quotes and calculations."""
@@ -34,18 +36,66 @@ class QuoteService(BaseService):
             AppError: If quote generation fails
         """
         try:
+            # Enhanced debugging
+            logger.info("=== Starting Quote Generation ===")
+            logger.info(f"Received bill data: {bill_data}")
+            
+            # Data sanitization
+            sanitized_data = {
+                'reference_number': str(bill_data.get('reference_number', '')).strip(),
+                'units_consumed': float(bill_data.get('units_consumed', 0)),
+                'amount': float(bill_data.get('amount', 0)),
+                'total_yearly_units': float(bill_data.get('total_yearly_units', 0)),
+                'customer_name': str(bill_data.get('customer_name', '')).strip(),
+                'issue_date': bill_data.get('issue_date'),
+                'due_date': bill_data.get('due_date')
+            }
+            
+            logger.info(f"Sanitized data: {sanitized_data}")
+
+            # Validate required fields
+            required_fields = ['reference_number', 'units_consumed', 'amount', 'total_yearly_units']
+            missing_fields = [field for field in required_fields if not sanitized_data.get(field)]
+            
+            if missing_fields:
+                raise AppError(
+                    message=f"Missing required fields: {', '.join(missing_fields)}",
+                    code='VALIDATION_ERROR'
+                )
+
+            # Validate numeric values
+            if sanitized_data['total_yearly_units'] <= 0:
+                raise AppError(
+                    message="Yearly units must be greater than 0",
+                    code='VALIDATION_ERROR'
+                )
+
             # Calculate system size
-            yearly_units = float(bill_data['Total Yearly Units'])
-            system_size = cls._calculate_system_size(yearly_units)
+            system_size = cls._calculate_system_size(sanitized_data['total_yearly_units'])
+            logger.info(f"Calculated system size: {system_size}kW")
 
-            # Get components
-            panel = cls._get_default_panel()
-            panels_needed = cls._calculate_panels_needed(system_size, panel.power)
-            inverter = cls._get_suitable_inverter(system_size)
+            # Get components with error handling
+            try:
+                panel = cls._get_default_panel()
+                panels_needed = cls._calculate_panels_needed(system_size, panel.power)
+                inverter = cls._get_suitable_inverter(system_size)
+                
+                logger.info(f"Components selected - Panel: {panel.brand}, Count: {panels_needed}, Inverter: {inverter.brand}")
+                
+            except AppError as e:
+                logger.error(f"Component selection failed: {str(e)}")
+                raise
 
-            # Get all costs
-            costs = cls._get_all_costs(system_size, panels_needed)
+            # Calculate costs with validation
+            try:
+                costs = cls._get_all_costs(system_size, panels_needed)
+                logger.info(f"Calculated costs: {costs}")
+                
+            except AppError as e:
+                logger.error(f"Cost calculation failed: {str(e)}")
+                raise
 
+            # Rest of the calculation logic remains the same
             # Calculate system metrics
             calculations = cls._calculate_system_metrics(
                 system_size=system_size,
@@ -80,9 +130,31 @@ class QuoteService(BaseService):
                 'costs': cls._format_costs_breakdown(costs)
             })
 
+        except AppError as e:
+            logger.error(f"Quote generation failed with AppError: {str(e)}")
+            raise
+        except KeyError as e:
+            logger.error(f"Missing required field: {e}")
+            raise AppError(
+                message=f'Missing required field: {str(e)}',
+                code='VALIDATION_ERROR'
+            )
+        except ValueError as e:
+            logger.error(f"Value conversion error: {e}")
+            raise AppError(
+                message='Invalid numeric value',
+                code='VALIDATION_ERROR',
+                data={'error': str(e)}
+            )
         except Exception as e:
-            raise AppError(message='Failed to generate quote', code='QUOTE_GENERATION_ERROR', data={'error': str(e)})
-
+            logger.exception("Unexpected error in quote generation")
+            raise AppError(
+                message='Failed to generate quote',
+                code='QUOTE_GENERATION_ERROR',
+                data={'error': str(e)}
+            )
+            
+            
     @classmethod
     def _calculate_system_size(cls, yearly_units: float) -> float:
         """Calculate optimal system size based on yearly consumption."""
@@ -124,22 +196,43 @@ class QuoteService(BaseService):
 
     @classmethod
     def _get_all_costs(cls, system_size: float, panels_count: int) -> Dict[str, float]:
-        """Get all system costs."""
+        """Get all system costs with enhanced error handling."""
         try:
-            # Get variable costs
-            variable_costs = {
-                cost.cost_name: float(cost.cost)
-                for cost in VariableCosts.objects.all()
-            }
+            logger.info(f"Calculating costs for {system_size}kW system with {panels_count} panels")
 
-            # Get bracket costs for system size
+            # Get variable costs with defaults
+            variable_costs = {}
+            required_costs = [
+                'Net Metering',
+                'Installation Cost per Watt',
+                'Frame Cost per Watt',
+                'Labor Cost'
+            ]
+            
+            for cost in VariableCosts.objects.all():
+                variable_costs[cost.cost_name] = float(cost.cost)
+            
+            # Check for missing costs and use defaults
+            for required_cost in required_costs:
+                if required_cost not in variable_costs:
+                    logger.warning(f"Missing cost: {required_cost}, using default")
+                    default_values = {
+                        'Net Metering': 50000,
+                        'Installation Cost per Watt': 10,
+                        'Frame Cost per Watt': 8,
+                        'Labor Cost': 5000
+                    }
+                    variable_costs[required_cost] = default_values[required_cost]
+
+            # Get bracket costs
             bracket_costs = InventoryService.get_bracket_costs(system_size)
+            logger.info(f"Retrieved bracket costs: {bracket_costs}")
 
-            return {
-                'net_metering': variable_costs.get('Net Metering', 0),
-                'installation': variable_costs.get('Installation Cost per Watt', 0) * system_size * 1000,
-                'frame': variable_costs.get('Frame Cost per Watt', 0) * system_size * 1000,
-                'labor': variable_costs.get('Labor Cost', 0) * system_size,
+            costs = {
+                'net_metering': variable_costs['Net Metering'],
+                'installation': variable_costs['Installation Cost per Watt'] * system_size * 1000,
+                'frame': variable_costs['Frame Cost per Watt'] * system_size * 1000,
+                'labor': variable_costs['Labor Cost'] * system_size,
                 'dc_cable': bracket_costs['dc_cable'],
                 'ac_cable': bracket_costs['ac_cable'],
                 'accessories': bracket_costs['accessories'],
@@ -148,11 +241,19 @@ class QuoteService(BaseService):
                 'vat': cls._calculate_vat(system_size)
             }
 
+            logger.info(f"Final calculated costs: {costs}")
+            return costs
+
         except Exception as e:
+            logger.exception("Error calculating costs")
             raise AppError(
                 message='Failed to retrieve costs',
                 code='COST_ERROR',
-                data={'error': str(e)}
+                data={
+                    'error': str(e),
+                    'system_size': system_size,
+                    'panels_count': panels_count
+                }
             )
 
     @classmethod

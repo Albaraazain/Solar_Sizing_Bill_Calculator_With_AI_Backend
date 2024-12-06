@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/serializers/cost_serializers.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733448540372,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733448540372,
+            "name": "Commit-0",
+            "content": "from decimal import Decimal\r\nfrom rest_framework import serializers\r\nfrom ..models import BracketCosts, VariableCosts\r\n\r\nclass BracketCostsSerializer(serializers.ModelSerializer):\r\n    min_size = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal('0.00'))\r\n    max_size = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal('0.00'))\r\n    dc_cable = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n    ac_cable = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n    accessories = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n\r\n    class Meta:\r\n        model = BracketCosts\r\n        fields = '__all__'\r\n\r\nclass VariableCostsSerializer(serializers.ModelSerializer):\r\n    cost = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n\r\n    class Meta:\r\n        model = VariableCosts\r\n        fields = '__all__'"
+        }
+    ]
+}

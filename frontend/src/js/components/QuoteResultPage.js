@@ -12,37 +12,47 @@ export class QuoteResultPage {
         this.quoteData = null;
     }
 
-    async initialize() {
-        try {
-            // Get reference number from session storage
-            const referenceNumber = sessionStorage.getItem('currentReferenceNumber');
-            if (!referenceNumber) {
-                throw new Error('No reference number available');
-            }
-
-            // Get bill details first
-            const billResponse = await Api.bill.getBillDetails(referenceNumber);
-            if (!billResponse || !billResponse.data || !billResponse.data.data) {
-                throw new Error('Failed to get bill details');
-            }
-
-            // Generate quote using bill details
-            const quoteResponse = await Api.quote.generateQuote(billResponse.data.data);
-            if (!quoteResponse || !quoteResponse.data) {
-                throw new Error('Failed to generate quote');
-            }
-
-            this.quoteData = quoteResponse.data;
-            console.log('Quote generated:', this.quoteData);
-
-            return true;
-        } catch (error) {
-            console.error('Failed to initialize QuoteResultPage:', error);
-            window.toasts?.show('Failed to generate quote', 'error');
-            window.router.push('/bill-review');
-            return false;
+async initialize() {
+    try {
+        // Get reference number from session storage
+        const referenceNumber = sessionStorage.getItem('currentReferenceNumber');
+        if (!referenceNumber) {
+            throw new Error('No reference number available');
         }
+
+
+        // Get bill details first
+        const response = await Api.bill.getBillDetails(referenceNumber);
+        console.log('Bill response:', response);
+
+        if (!response?.success || !response?.data) {
+            throw new Error('Invalid bill response structure');
+        }
+
+        // Ensure reference number is included in the data
+        const billData = {
+            ...response.data,
+            reference_number: referenceNumber  // Explicitly include the reference number
+        };
+
+        // Generate quote using bill data
+        const quoteResponse = await Api.quote.generateQuote(billData);
+        console.log('Quote response:', quoteResponse);
+
+        if (!quoteResponse?.success || !quoteResponse?.data) {
+            throw new Error('Failed to generate quote');
+        }
+
+        this.quoteData = quoteResponse.data;
+        return true;
+
+    } catch (error) {
+        console.error('Failed to initialize QuoteResultPage:', error);
+        window.toasts?.show(error.message || 'Failed to generate quote', 'error');
+        window.router.push('/bill-review');
+        return false;
     }
+}
 
     async render() {
         const initialized = await this.initialize();

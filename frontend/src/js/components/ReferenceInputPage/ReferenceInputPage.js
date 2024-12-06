@@ -116,15 +116,6 @@ export class ReferenceInputPage {
                     }
                 </button>
 
-                ${
-                  this.state.error
-                    ? `
-                    <div class="error-message">
-                        ${this.state.error}
-                    </div>
-                `
-                    : ""
-                }
             </form>
         `;
   }
@@ -370,7 +361,7 @@ export class ReferenceInputPage {
     if (this.state.isLoading) return;
 
     try {
-        
+
         this.setState({ isLoading: true, error: null });
 
       const response = await Api.bill.validateReferenceNumber(
@@ -396,6 +387,7 @@ export class ReferenceInputPage {
       if (window.toasts) {
         window.toasts.show(error.message, "error");
       }
+      
     }
   };
 

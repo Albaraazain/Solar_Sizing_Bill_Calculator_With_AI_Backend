@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/migrations/0XXX_set_default_panel.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733448836484,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733448836484,
+            "name": "Commit-0",
+            "content": "\r\nfrom django.db import migrations\r\n\r\ndef set_default_panel(apps, schema_editor):\r\n    Panel = apps.get_model('solar', 'Panel')\r\n    if Panel.objects.exists() and not Panel.objects.filter(default_choice=True).exists():\r\n        first_panel = Panel.objects.first()\r\n        first_panel.default_choice = True\r\n        first_panel.save()\r\n\r\ndef reverse_default_panel(apps, schema_editor):\r\n    # No reverse operation needed\r\n    pass\r\n\r\nclass Migration(migrations.Migration):\r\n    dependencies = [\r\n        ('solar', 'previous_migration'),  # Replace with your last migration\r\n    ]\r\n\r\n    operations = [\r\n        migrations.RunPython(set_default_panel, reverse_default_panel),\r\n    ]"
+        }
+    ]
+}

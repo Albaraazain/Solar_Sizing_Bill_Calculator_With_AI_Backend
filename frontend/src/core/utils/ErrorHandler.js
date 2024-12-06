@@ -3,11 +3,15 @@ import { eventBus } from '../events/EventBus.js';
 import { ENV } from '../../config/environment.js';
 
 export class AppError extends Error {
-    constructor(message, code, data = {}) {
-        super(message);
+    constructor(message, code, data = {}) {    
+        super(typeof message === 'string' ? message : 'An error occurred');
         this.code = code;
         this.data = data;
         this.timestamp = new Date();
+    }
+
+    getDisplayMessage() {
+        return this.message;
     }
 }
 

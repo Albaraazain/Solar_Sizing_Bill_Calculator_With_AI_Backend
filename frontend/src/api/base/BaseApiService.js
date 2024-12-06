@@ -67,20 +67,44 @@ export class BaseApiService {
         const { response } = error;
         if (response) {
             const { status, data } = response;
+            const errorMessage = data?.error?.message || data?.message;
+            const errorCode = data?.error?.code;
+            
             switch (status) {
                 case 400:
-                    return new AppError(data.message || 'Invalid request', 'BAD_REQUEST', data);
+                    return new AppError(
+                        errorMessage || 'Please check the reference number and try again',
+                        errorCode || 'VALIDATION_ERROR',
+                        data
+                    );
                 case 401:
-                    return new AppError('Unauthorized access', 'UNAUTHORIZED');
+                    return new AppError(
+                        errorMessage || 'Authentication required',
+                        errorCode || 'UNAUTHORIZED'
+                    );
                 case 404:
-                    return new AppError('Resource not found', 'NOT_FOUND');
+                    return new AppError(
+                        errorMessage || 'Reference number not found',
+                        errorCode || 'NOT_FOUND'
+                    );
                 case 500:
-                    return new AppError('Server error', 'SERVER_ERROR');
+                    return new AppError(
+                        errorMessage || 'Server error, please try again later',
+                        errorCode || 'SERVER_ERROR'
+                    );
                 default:
-                    return new AppError('An unexpected error occurred', 'UNKNOWN_ERROR', { originalError: error });
+                    return new AppError(
+                        errorMessage || 'An unexpected error occurred',
+                        errorCode || 'UNKNOWN_ERROR',
+                        { originalError: error }
+                    );
             }
         }
-        return new AppError('Network error', 'NETWORK_ERROR', { originalError: error });
+        return new AppError(
+            'Unable to connect to the server. Please check your connection.',
+            'NETWORK_ERROR',
+            { originalError: error }
+        );
     }
 
 }

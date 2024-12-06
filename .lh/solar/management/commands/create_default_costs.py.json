@@ -1,0 +1,18 @@
+{
+    "sourceFile": "solar/management/commands/create_default_costs.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1733447963555,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1733447963555,
+            "name": "Commit-0",
+            "content": "\r\nfrom django.core.management.base import BaseCommand\r\nfrom decimal import Decimal\r\nfrom solar.models import VariableCosts, BracketCosts\r\n\r\nclass Command(BaseCommand):\r\n    help = 'Creates default variable and bracket costs'\r\n\r\n    def handle(self, *args, **kwargs):\r\n        # Default variable costs\r\n        default_costs = {\r\n            'Net Metering': '50000.00',\r\n            'Installation Cost per Watt': '10.00',\r\n            'Frame Cost per Watt': '8.00',\r\n            'Labor Cost': '5000.00'\r\n        }\r\n\r\n        for name, cost in default_costs.items():\r\n            VariableCosts.objects.get_or_create(\r\n                cost_name=name,\r\n                defaults={'cost': Decimal(cost)}\r\n            )\r\n\r\n        # Default bracket costs\r\n        brackets = [\r\n            {\r\n                'min_size': '0.00',\r\n                'max_size': '5.00',\r\n                'dc_cable': '15000.00',\r\n                'ac_cable': '10000.00',\r\n                'accessories': '20000.00'\r\n            },\r\n            {\r\n                'min_size': '5.00',\r\n                'max_size': '10.00',\r\n                'dc_cable': '25000.00',\r\n                'ac_cable': '15000.00',\r\n                'accessories': '30000.00'\r\n            },\r\n            {\r\n                'min_size': '10.00',\r\n                'max_size': '999.00',\r\n                'dc_cable': '35000.00',\r\n                'ac_cable': '20000.00',\r\n                'accessories': '40000.00'\r\n            }\r\n        ]\r\n\r\n        for bracket in brackets:\r\n            BracketCosts.objects.get_or_create(\r\n                min_size=Decimal(bracket['min_size']),\r\n                max_size=Decimal(bracket['max_size']),\r\n                defaults={\r\n                    'dc_cable': Decimal(bracket['dc_cable']),\r\n                    'ac_cable': Decimal(bracket['ac_cable']),\r\n                    'accessories': Decimal(bracket['accessories'])\r\n                }\r\n            )\r\n\r\n        self.stdout.write(self.style.SUCCESS('Successfully created default costs'))"
+        }
+    ]
+}

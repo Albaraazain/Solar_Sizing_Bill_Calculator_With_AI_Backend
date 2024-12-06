@@ -1,5 +1,7 @@
 from django.db import models
 from datetime import datetime
+from decimal import Decimal
+
 # Create your models here.
 class Panel(models.Model):
     brand = models.CharField(max_length=100)
@@ -27,9 +29,55 @@ class PotentialCustomers(models.Model):
     date = models.DateTimeField(default=datetime.now)
 
 class BracketCosts(models.Model):
-    Type = models.CharField(max_length=15)
-    SystemRange = models.IntegerField()
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    """Cost brackets for different system sizes."""
+    min_size = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Minimum system size in kW"
+    )
+    max_size = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        default=Decimal('999.00'),
+        help_text="Maximum system size in kW"
+    )
+    dc_cable = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        default=Decimal('15000.00'),
+        help_text="DC cable cost for this bracket"
+    )
+    ac_cable = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        default=Decimal('10000.00'),
+        help_text="AC cable cost for this bracket"
+    )
+    accessories = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        default=Decimal('20000.00'),
+        help_text="Accessories cost for this bracket"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        null=True,  # Allow null temporarily
+        blank=True
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        null=True,  # Allow null temporarily
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = "Bracket Cost"
+        verbose_name_plural = "Bracket Costs"
+        unique_together = ('min_size', 'max_size')
+
+    def __str__(self):
+        return f"Size: {self.min_size}kW - {self.max_size}kW"
     
 class Bill(models.Model):
     reference_number = models.CharField(max_length=100)

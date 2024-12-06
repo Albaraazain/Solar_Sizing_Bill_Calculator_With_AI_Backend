@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 1,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1728483914021,
@@ -12,6 +12,10 @@
                 {
                     "date": 1733415331182,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n from django.contrib import admin\n-from .models import Panel, Inverter, PotentialCustomers, variableCosts, BracketCosts\n+from .models import Panel, Inverter, PotentialCustomers, VariableCosts, BracketCosts\n \n class PanelAdmin(admin.ModelAdmin):\n     list_display = ('brand', 'price', 'power')\n     \n@@ -9,9 +9,9 @@\n     \n class PotentialCustomersAdmin(admin.ModelAdmin):\n     list_display = ('name', 'phone', 'reference_number')    \n \n-class variableCostsAdmin(admin.ModelAdmin):\n+class VariableCostsAdmin(admin.ModelAdmin):\n     list_display = ('cost_name', 'cost')\n \n class BracketCostsAdmin(admin.ModelAdmin):\n     list_display = ('Type', 'SystemRange', 'cost')\n@@ -19,6 +19,6 @@\n # Register your models here.\n admin.site.register(Panel, PanelAdmin)\n admin.site.register(Inverter, InverterAdmin)\n admin.site.register(PotentialCustomers, PotentialCustomersAdmin)\n-admin.site.register(variableCosts, variableCostsAdmin)\n+admin.site.register(VariableCosts, VariableCostsAdmin)\n admin.site.register(BracketCosts, BracketCostsAdmin)\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1733447585265,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,9 @@\n from django.contrib import admin\n-from .models import Panel, Inverter, PotentialCustomers, VariableCosts, BracketCosts\n+from .models import (\n+    Panel, Inverter, VariableCosts, BracketCosts, \n+    Bill, Quote, Document, PotentialCustomers\n+)\n \n class PanelAdmin(admin.ModelAdmin):\n     list_display = ('brand', 'price', 'power')\n     \n@@ -12,13 +15,35 @@\n \n class VariableCostsAdmin(admin.ModelAdmin):\n     list_display = ('cost_name', 'cost')\n \n+@admin.register(BracketCosts)\n class BracketCostsAdmin(admin.ModelAdmin):\n-    list_display = ('Type', 'SystemRange', 'cost')\n+    list_display = ('get_system_range', 'dc_cable', 'ac_cable', 'accessories', 'created_at')\n+    list_filter = ('min_size', 'max_size')\n+    search_fields = ('min_size', 'max_size')\n+    readonly_fields = ('created_at', 'updated_at')\n+    ordering = ('min_size',)\n \n\\ No newline at end of file\n+    def get_system_range(self, obj):\n+        \"\"\"Display system size range.\"\"\"\n+        return f\"{obj.min_size}kW - {obj.max_size}kW\"\n+    get_system_range.short_description = 'System Range'\n+\n+    fieldsets = (\n+        ('System Size Range', {\n+            'fields': ('min_size', 'max_size')\n+        }),\n+        ('Costs', {\n+            'fields': ('dc_cable', 'ac_cable', 'accessories')\n+        }),\n+        ('Timestamps', {\n+            'fields': ('created_at', 'updated_at'),\n+            'classes': ('collapse',)\n+        }),\n+    )\n+\n # Register your models here.\n admin.site.register(Panel, PanelAdmin)\n admin.site.register(Inverter, InverterAdmin)\n admin.site.register(PotentialCustomers, PotentialCustomersAdmin)\n-admin.site.register(VariableCosts, VariableCostsAdmin)\n-admin.site.register(BracketCosts, BracketCostsAdmin)\n+admin.site.register(VariableCosts, VariableCostsAdmin)\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1728483914021,

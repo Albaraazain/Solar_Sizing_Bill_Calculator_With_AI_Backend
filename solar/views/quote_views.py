@@ -12,49 +12,52 @@ from ..middleware.error_handler import AppError
 logger = logging.getLogger(__name__)
 
 class QuoteGenerateAPIView(APIView):
-    """API endpoint to generate solar system quotes."""
-    
     def post(self, request):
         try:
-            # Validate reference number if provided
-            reference_number = request.data.get('reference_number')
-            if not reference_number:
-                raise AppError(
-                    message='Reference number is required',
-                    code='VALIDATION_ERROR'
-                )
+            # Log the raw request data
+            logger.info(f"Raw quote generation request data: {request.data}")
+            logger.info(f"Request content type: {request.content_type}")
 
-            # Get bill details first
-            bill_response = BillService.get_bill_details(reference_number)
-            if not bill_response['success']:
-                return Response(bill_response, status=status.HTTP_400_BAD_REQUEST)
+            # Log data type validations
+            for field in ['units_consumed', 'amount', 'total_yearly_units']:
+                value = request.data.get(field)
+                logger.info(f"Field {field}: value={value}, type={type(value)}")
 
-            # Generate quote using bill data
-            quote_data = QuoteService.generate_quote(bill_response['data'])
+            try:
+                # Attempt numeric conversions
+                units = float(request.data.get('units_consumed', 0))
+                amount = float(request.data.get('amount', 0))
+                yearly = float(request.data.get('total_yearly_units', 0))
+                
+                logger.info(f"Converted values - units: {units}, amount: {amount}, yearly: {yearly}")
+            except (ValueError, TypeError) as e:
+                logger.error(f"Numeric conversion error: {e}")
+                return Response({
+                    'success': False,
+                    'error': {
+                        'message': 'Invalid numeric values',
+                        'code': 'VALIDATION_ERROR',
+                        'details': str(e)
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Log the data being passed to the service
+            logger.info("Passing to quote service:", request.data)
+            quote_data = QuoteService.generate_quote(request.data)
             return Response(quote_data)
 
-        except AppError as e:
-            logger.warning(f"Quote generation failed: {str(e)}")
+        except Exception as e:
+            logger.exception("Error in quote generation")
             return Response({
                 'success': False,
                 'error': {
                     'message': str(e),
-                    'code': e.code,
-                    'data': e.data
+                    'code': 'QUOTE_GENERATION_ERROR',
+                    'details': str(e)
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            logger.exception("Unexpected error in quote generation")
-            return Response({
-                'success': False,
-                'error': {
-                    'message': 'An unexpected error occurred',
-                    'code': 'SERVER_ERROR',
-                    'data': {'detail': str(e)} if settings.DEBUG else {}
-                }
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            
+                        
 class QuoteDetailsAPIView(APIView):
     """API endpoint to retrieve specific quote details."""
     

@@ -12,9 +12,9 @@ export const API_CONFIG = {
         },
         QUOTE: {
             BASE: '/quote',
-            GENERATE: '/generate/',       // Added trailing slash
-            GET: '/details/',             // Added trailing slash
-            SAVE: '/save/'                // Added trailing slash
+            GENERATE: '/generate/',
+            GET: '/details/',
+            SAVE: '/save/'
         },
         AUTH: {
             LOGIN: '/auth/login/',              // Added auth endpoints

@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 7,
             "patches": [
                 {
                     "date": 1733433951939,
@@ -28,6 +28,14 @@
                 {
                     "date": 1733437113664,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,38 @@\n+// path: frontend/src/api/client/apiConfig.js\r\n+export const API_CONFIG = {\r\n+    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',\r\n+    TIMEOUT: 10000,\r\n+    ENDPOINTS: {\r\n+        BILL: {\r\n+            BASE: '/bill',\r\n+            ANALYZE: '/analyze/',          // Added trailing slash\r\n+            GET: '/details/',              // Added trailing slash\r\n+            VALIDATE: '/validate/',        // Added trailing slash\r\n+            HISTORY: '/history/'           // Added trailing slash\r\n+        },\r\n+        QUOTE: {\r\n+            BASE: '/quote',\r\n+            GENERATE: '/generate/',       // Added trailing slash\r\n+            GET: '/details/',             // Added trailing slash\r\n+            SAVE: '/save/'                // Added trailing slash\r\n+        },\r\n+        AUTH: {\r\n+            LOGIN: '/auth/login/',              // Added auth endpoints\r\n+            REFRESH: '/auth/refresh/'\r\n+        }\r\n+    },\r\n+    HEADERS: {\r\n+        'Content-Type': 'application/json',\r\n+        'Accept': 'application/json'\r\n+    }\r\n+};\r\n+\r\n+export const HTTP_STATUS = {\r\n+    OK: 200,\r\n+    CREATED: 201,\r\n+    BAD_REQUEST: 400,\r\n+    UNAUTHORIZED: 401,\r\n+    FORBIDDEN: 403,\r\n+    NOT_FOUND: 404,\r\n+    INTERNAL_SERVER_ERROR: 500\r\n+};\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1733444002640,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,11 +11,11 @@\n             HISTORY: '/history/'           // Added trailing slash\r\n         },\r\n         QUOTE: {\r\n             BASE: '/quote',\r\n-            GENERATE: '/generate/',       // Added trailing slash\r\n-            GET: '/details/',             // Added trailing slash\r\n-            SAVE: '/save/'                // Added trailing slash\r\n+            GENERATE: '/generate/',\r\n+            GET: '/details/',\r\n+            SAVE: '/save/'\r\n         },\r\n         AUTH: {\r\n             LOGIN: '/auth/login/',              // Added auth endpoints\r\n             REFRESH: '/auth/refresh/'\r\n"
+                },
+                {
+                    "date": 1733444678146,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,43 +34,5 @@\n     UNAUTHORIZED: 401,\r\n     FORBIDDEN: 403,\r\n     NOT_FOUND: 404,\r\n     INTERNAL_SERVER_ERROR: 500\r\n-};\n-// path: frontend/src/api/client/apiConfig.js\r\n-export const API_CONFIG = {\r\n-    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',\r\n-    TIMEOUT: 10000,\r\n-    ENDPOINTS: {\r\n-        BILL: {\r\n-            BASE: '/bill',\r\n-            ANALYZE: 'analyze/',          // Added trailing slash\r\n-            GET: 'details/',              // Added trailing slash\r\n-            VALIDATE: 'validate/',        // Added trailing slash\r\n-            HISTORY: 'history/'           // Added trailing slash\r\n-        },\r\n-        QUOTE: {\r\n-            BASE: '/quote',\r\n-            GENERATE: 'generate/',       // Added trailing slash\r\n-            GET: 'details/',             // Added trailing slash\r\n-            SAVE: 'save/'                // Added trailing slash\r\n-        },\r\n-        AUTH: {\r\n-            LOGIN: '/auth/login/',              // Added auth endpoints\r\n-            REFRESH: '/auth/refresh/'\r\n-        }\r\n-    },\r\n-    HEADERS: {\r\n-        'Content-Type': 'application/json',\r\n-        'Accept': 'application/json'\r\n-    }\r\n-};\r\n-\r\n-export const HTTP_STATUS = {\r\n-    OK: 200,\r\n-    CREATED: 201,\r\n-    BAD_REQUEST: 400,\r\n-    UNAUTHORIZED: 401,\r\n-    FORBIDDEN: 403,\r\n-    NOT_FOUND: 404,\r\n-    INTERNAL_SERVER_ERROR: 500\r\n };\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1733433951939,

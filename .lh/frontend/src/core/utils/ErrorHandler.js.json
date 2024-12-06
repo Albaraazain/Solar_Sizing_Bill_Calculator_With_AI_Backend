@@ -1,0 +1,26 @@
+{
+    "sourceFile": "frontend/src/core/utils/ErrorHandler.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1733442849082,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733442879756,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,14 +3,15 @@\n import { ENV } from '../../config/environment.js';\r\n \r\n export class AppError extends Error {\r\n     constructor(message, code, data = {}) {\r\n-        super(message);\r\n+        \r\n+        super(typeof message === 'string' ? message : 'An error occurred');\r\n         this.code = code;\r\n         this.data = data;\r\n         this.timestamp = new Date();\r\n     }\r\n-    \r\n+\r\n     getDisplayMessage() {\r\n         return this.message;\r\n     }\r\n }\r\n"
+                },
+                {
+                    "date": 1733442888049,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,10 +2,9 @@\n import { eventBus } from '../events/EventBus.js';\r\n import { ENV } from '../../config/environment.js';\r\n \r\n export class AppError extends Error {\r\n-    constructor(message, code, data = {}) {\r\n-        \r\n+    constructor(message, code, data = {}) {    \r\n         super(typeof message === 'string' ? message : 'An error occurred');\r\n         this.code = code;\r\n         this.data = data;\r\n         this.timestamp = new Date();\r\n"
+                }
+            ],
+            "date": 1733442849082,
+            "name": "Commit-0",
+            "content": "// src/core/utils/ErrorHandler.js\r\nimport { eventBus } from '../events/EventBus.js';\r\nimport { ENV } from '../../config/environment.js';\r\n\r\nexport class AppError extends Error {\r\n    constructor(message, code, data = {}) {\r\n        super(message);\r\n        this.code = code;\r\n        this.data = data;\r\n        this.timestamp = new Date();\r\n    }\r\n    \r\n    getDisplayMessage() {\r\n        return this.message;\r\n    }\r\n}\r\n\r\nexport class ErrorHandler {\r\n    static handle(error) {\r\n        if (error instanceof AppError) {\r\n            return this.handleAppError(error);\r\n        }\r\n        return this.handleUnknownError(error);\r\n    }\r\n\r\n    static handleAppError(error) {\r\n        eventBus.publish('error', {\r\n            message: error.message,\r\n            code: error.code,\r\n            data: error.data\r\n        });\r\n\r\n        if (ENV.DEBUG) {\r\n            console.error('App Error:', error);\r\n        }\r\n    }\r\n\r\n    static handleUnknownError(error) {\r\n        eventBus.publish('error', {\r\n            message: 'An unexpected error occurred',\r\n            code: 'UNKNOWN_ERROR',\r\n            originalError: error\r\n        });\r\n\r\n        if (ENV.DEBUG) {\r\n            console.error('Unknown Error:', error);\r\n        }\r\n    }\r\n}\r\n"
+        }
+    ]
+}

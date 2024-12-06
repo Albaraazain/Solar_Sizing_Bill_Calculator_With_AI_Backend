@@ -1,0 +1,22 @@
+{
+    "sourceFile": "solar/serializers.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1733448228912,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1733448543462,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -18,21 +18,4 @@\n     class Meta:\r\n         model = Inverter\r\n         fields = '__all__'\r\n \r\n-class BracketCostsSerializer(serializers.ModelSerializer):\r\n-    min_size = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal('0.00'))\r\n-    max_size = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal('0.00'))\r\n-    dc_cable = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n-    ac_cable = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n-    accessories = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n-\r\n-    class Meta:\r\n-        model = BracketCosts\r\n-        fields = '__all__'\r\n-\r\n-class VariableCostsSerializer(serializers.ModelSerializer):\r\n-    cost = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n-\r\n-    class Meta:\r\n-        model = VariableCosts\r\n-        fields = '__all__'\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1733448228912,
+            "name": "Commit-0",
+            "content": "\r\nfrom rest_framework import serializers\r\nfrom decimal import Decimal\r\nfrom .models import Panel, Inverter, BracketCosts, VariableCosts\r\n\r\nclass PanelSerializer(serializers.ModelSerializer):\r\n    power = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n    price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n\r\n    class Meta:\r\n        model = Panel\r\n        fields = '__all__'\r\n\r\nclass InverterSerializer(serializers.ModelSerializer):\r\n    power = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n    price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n\r\n    class Meta:\r\n        model = Inverter\r\n        fields = '__all__'\r\n\r\nclass BracketCostsSerializer(serializers.ModelSerializer):\r\n    min_size = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal('0.00'))\r\n    max_size = serializers.DecimalField(max_digits=5, decimal_places=2, min_value=Decimal('0.00'))\r\n    dc_cable = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n    ac_cable = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n    accessories = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n\r\n    class Meta:\r\n        model = BracketCosts\r\n        fields = '__all__'\r\n\r\nclass VariableCostsSerializer(serializers.ModelSerializer):\r\n    cost = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))\r\n\r\n    class Meta:\r\n        model = VariableCosts\r\n        fields = '__all__'"
+        }
+    ]
+}
