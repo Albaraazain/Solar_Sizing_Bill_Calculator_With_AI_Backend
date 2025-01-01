@@ -1,0 +1,32 @@
+.bill-preview {
+    transition: transform 0.3s ease;
+}
+
+.bill-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Print styles */
+@media print {
+    .bill-preview {
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    .bill-preview-container {
+        padding: 0 !important;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .bill-preview {
+        padding: 1rem;
+    }
+
+    .bill-preview table {
+        font-size: 0.75rem;
+    }
+}
