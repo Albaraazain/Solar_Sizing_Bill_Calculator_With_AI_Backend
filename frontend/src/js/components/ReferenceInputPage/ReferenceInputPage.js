@@ -1,5 +1,6 @@
 // src/js/components/ReferenceInputPage/ReferenceInputPage.js
 import { Api } from "/src/api/index.js";
+import logoSvg from '@/assets/logo.svg';
 
 export class ReferenceInputPage {
   constructor() {
@@ -20,7 +21,7 @@ export class ReferenceInputPage {
             <div class="main-content">
                 <!-- Logo Section -->
                 <div class="logo-section">
-                    <img src="/src/assets/logo.svg" alt="Logo" class="logo-icon -ml-8 -mt-8" style="width: 13rem; height: 13rem;" />
+                    <img src="${logoSvg}" alt="Logo" class="logo-icon" style="width: 8rem; height: 8rem;" />
                 </div>
 
                 <!-- Main Layout -->
