@@ -10,7 +10,7 @@ python manage.py migrate --noinput
 echo "Building frontend..."
 cd frontend
 npm install
-npm run build
+NODE_ENV=production npm run build
 cd ..
 
 echo "Cleaning existing static files..."
