@@ -13,7 +13,10 @@ npm install
 npm run build
 cd ..
 
+echo "Cleaning existing static files..."
+rm -rf staticfiles/*
+
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --clear
 
 echo "Deployment build complete!" 

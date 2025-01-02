@@ -5,12 +5,14 @@ export default defineConfig({
     build: {
         cssMinify: 'lightningcss',
         outDir: 'dist',
-        assetsDir: 'assets',
-        // Add manifest for Django
+        assetsDir: 'static',
         manifest: true,
         rollupOptions: {
             output: {
-                manualChunks: undefined
+                manualChunks: undefined,
+                assetFileNames: 'static/[name]-[hash][extname]',
+                chunkFileNames: 'static/[name]-[hash].js',
+                entryFileNames: 'static/[name]-[hash].js',
             }
         }
     },
