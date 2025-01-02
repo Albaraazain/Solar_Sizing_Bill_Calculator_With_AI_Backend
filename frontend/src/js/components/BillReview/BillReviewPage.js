@@ -51,8 +51,8 @@ export class BillReviewPage {
             <div class="h-screen w-full overflow-hidden bg-white transition-colors duration-1000 opacity-0" id="bill-review-page">
                 <div class="h-full w-full flex flex-col md:flex-row relative" id="main-content">
                     <!-- Bill Preview Side -->
-                    <div class="w-full md:w-1/2 h-[45vh] md:h-full overflow-hidden opacity-0" id="bill-preview-container">
-                        <div id="bill-preview" class="h-full"></div>
+                    <div class="w-full md:w-1/2 h-[45vh] md:h-full overflow-y-auto" id="bill-preview-container">
+                        <div id="bill-preview" class="min-h-full"></div>
                     </div>
 
                     <!-- Loading Indicator -->
@@ -63,13 +63,13 @@ export class BillReviewPage {
 
                     <!-- Insights Container -->
                     <div class="fixed md:relative w-full md:w-1/2 h-[60vh] md:h-full bg-gray-50 rounded-t-3xl md:rounded-none 
-                              shadow-2xl md:shadow-none" id="insights-container" style="bottom: 0;">
+                              shadow-2xl md:shadow-none overflow-hidden" id="insights-container" style="bottom: 0;">
                         <!-- Drag Handle for mobile -->
                         <div class="md:hidden w-full flex justify-center py-2 drag-handle">
                             <div class="w-12 h-1.5 rounded-full bg-gray-300"></div>
                         </div>
 
-                        <div class="h-full flex flex-col p-4 sm:p-6 overflow-auto hide-scrollbar">
+                        <div class="h-full flex flex-col p-4 sm:p-6 overflow-y-auto hide-scrollbar">
                             <!-- Content will be added by renderInsights() -->
                         </div>
                     </div>
