@@ -13,6 +13,7 @@ from .views import (
     customer_views,
     admin_views
 )
+from .views.health_views import health_check
 
 # Create router for viewsets
 router = DefaultRouter()
@@ -60,4 +61,6 @@ urlpatterns = [
         path('login/', auth_views.LoginView.as_view(), name='auth-login'),
         path('refresh/', auth_views.RefreshTokenView.as_view(), name='auth-refresh'),
     ])),
+
+    path('health/', health_check, name='health_check'),
 ]
