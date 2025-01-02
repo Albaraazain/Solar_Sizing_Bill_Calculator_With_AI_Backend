@@ -1,115 +1,138 @@
-import { SystemDetailsView } from './views/SystemDetailsView.js';
-import { FinancialAnalysisView } from './views/FinancialAnalysisView.js';
-import { ComponentsView } from './views/ComponentsView.js';
+import { gsap } from "gsap";
+import { OverviewView } from "./views/OverviewView.js";
+import { SystemDetailsView } from "./views/SystemDetailsView.js";
+import { FinancialAnalysisView } from "./views/FinancialAnalysisView.js";
+import { ComponentsView } from "./views/ComponentsView.js";
 
 export class ViewManager {
     constructor(quoteData) {
         this.quoteData = quoteData;
+        this.container = null;
         this.currentView = null;
-        this.contentContainer = null;
         this.views = {
+            overview: new OverviewView(quoteData),
             system: new SystemDetailsView(quoteData),
             financial: new FinancialAnalysisView(quoteData),
             components: new ComponentsView(quoteData)
         };
+        this.timeline = null;
     }
 
-    initialize(contentContainer) {
-        this.contentContainer = contentContainer;
-        this.setupEventListeners();
+    initialize(container) {
+        this.container = container;
         
-        // Set initial view based on hash or default to overview
-        const hash = window.location.hash.slice(1) || 'overview';
-        this.navigateToView(hash);
-    }
-
-    setupEventListeners() {
-        // Handle navigation clicks
+        // Set up event listeners for navigation
         document.querySelectorAll('[data-view]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const view = e.currentTarget.dataset.view;
-                this.navigateToView(view);
+                const viewName = e.currentTarget.dataset.view;
+                this.switchView(viewName);
             });
         });
 
         // Handle browser back/forward
-        window.addEventListener('popstate', (e) => {
-            const view = window.location.hash.slice(1) || 'overview';
-            this.navigateToView(view, false);
-        });
+        window.addEventListener('popstate', this.handlePopState.bind(this));
+
+        // Get initial view from URL hash or default to overview
+        const initialView = window.location.hash.slice(1) || 'overview';
+        this.switchView(initialView, true);
     }
 
-    navigateToView(viewName, updateHistory = true) {
-        // Clean up current view if exists
-        if (this.currentView?.cleanup) {
-            this.currentView.cleanup();
+    async switchView(viewName, isInitial = false) {
+        if (!this.views[viewName]) {
+            console.error('Invalid view name:', viewName);
+            return;
         }
 
-        // Update active states
-        document.querySelectorAll('[data-view]').forEach(link => {
-            const isActive = link.dataset.view === viewName;
-            link.classList.toggle('bg-gradient-to-r', isActive);
-            link.classList.toggle('from-emerald-50', isActive);
-            link.classList.toggle('to-emerald-50/50', isActive);
-            link.classList.toggle('text-emerald-700', isActive);
-            link.classList.toggle('border', isActive);
-            link.classList.toggle('border-emerald-100/50', isActive);
-            link.classList.toggle('text-gray-700', !isActive);
-            link.classList.toggle('hover:bg-gray-50', !isActive);
-            link.classList.toggle('hover:text-gray-900', !isActive);
+        // Update navigation state
+        this.updateNavigation(viewName);
 
-            // Update icon background
-            const iconContainer = link.querySelector('.icon-container');
-            if (iconContainer) {
-                iconContainer.classList.toggle('bg-emerald-600/10', isActive);
-                iconContainer.classList.toggle('bg-gray-100', !isActive);
-                iconContainer.classList.toggle('text-emerald-600', isActive);
-                iconContainer.classList.toggle('text-gray-500', !isActive);
-                iconContainer.classList.toggle('group-hover:bg-gray-200/70', !isActive);
-                iconContainer.classList.toggle('group-hover:text-gray-900', !isActive);
+        // If it's the initial view, render without animation
+        if (isInitial) {
+            this.renderView(viewName);
+            return;
+        }
+
+        // Create timeline for view transition
+        this.timeline = gsap.timeline({
+            defaults: {
+                duration: 0.4,
+                ease: 'power2.inOut'
             }
         });
 
-        // Update URL if needed
-        if (updateHistory) {
-            window.history.pushState(null, '', `#${viewName}`);
-        }
+        // Fade out current content
+        await this.timeline.to(this.container, {
+            opacity: 0,
+            y: -20,
+            duration: 0.3
+        });
 
-        // Render new view
-        let view;
-        switch (viewName) {
-            case 'system':
-                view = this.views.system;
-                break;
-            case 'financial':
-                view = this.views.financial;
-                break;
-            case 'components':
-                view = this.views.components;
-                break;
-            default:
-                view = this.views.system; // Default to system view
-        }
+        // Render new content
+        this.renderView(viewName);
 
-        this.currentView = view;
-        this.contentContainer.innerHTML = view.render();
+        // Fade in new content
+        this.timeline.fromTo(this.container, 
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.4 }
+        );
+    }
 
-        // Initialize any components in the new view
-        if (view.initializeCharts) {
-            requestAnimationFrame(() => {
-                view.initializeCharts();
-            });
+    renderView(viewName) {
+        // Update current view
+        this.currentView = viewName;
+        
+        // Render the view content
+        this.container.innerHTML = this.views[viewName].render();
+        
+        // Initialize any view-specific functionality
+        if (typeof this.views[viewName].initialize === 'function') {
+            this.views[viewName].initialize(this.container);
         }
     }
 
-    cleanup() {
-        if (this.currentView?.cleanup) {
-            this.currentView.cleanup();
-        }
+    updateNavigation(viewName) {
+        // Update URL hash without triggering popstate
+        const newUrl = `${window.location.pathname}#${viewName}`;
+        window.history.pushState({ view: viewName }, '', newUrl);
+
+        // Update active state of navigation links
         document.querySelectorAll('[data-view]').forEach(link => {
-            link.removeEventListener('click', this.navigateToView);
+            const isActive = link.dataset.view === viewName;
+            link.classList.toggle('active-nav-link', isActive);
+            
+            if (isActive) {
+                link.classList.add('bg-emerald-50', 'text-emerald-900');
+                link.classList.remove('text-gray-700');
+            } else {
+                link.classList.remove('bg-emerald-50', 'text-emerald-900');
+                link.classList.add('text-gray-700');
+            }
         });
-        window.removeEventListener('popstate', this.navigateToView);
+    }
+
+    handlePopState(event) {
+        const viewName = window.location.hash.slice(1) || 'overview';
+        this.switchView(viewName);
+    }
+
+    cleanup() {
+        // Remove event listeners
+        document.querySelectorAll('[data-view]').forEach(link => {
+            link.removeEventListener('click', this.switchView);
+        });
+        window.removeEventListener('popstate', this.handlePopState);
+
+        // Kill any active animations
+        if (this.timeline) {
+            this.timeline.kill();
+        }
+
+        // Cleanup view-specific resources
+        Object.values(this.views).forEach(view => {
+            if (typeof view.cleanup === 'function') {
+                view.cleanup();
+            }
+        });
     }
 } 
