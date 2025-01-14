@@ -35,6 +35,7 @@ API_URL = os.environ.get('API_URL', 'http://127.0.0.1:8000/api')
 INSTALLED_APPS = [
     'corsheaders',
     'solar', 
+    'django_extensions',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
