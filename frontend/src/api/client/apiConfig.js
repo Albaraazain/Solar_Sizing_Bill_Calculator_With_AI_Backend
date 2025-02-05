@@ -1,6 +1,6 @@
 // path: frontend/src/api/client/apiConfig.js
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+    BASE_URL: import.meta.env.VITE_API_URL || 'http://95.217.113.101/api',
     TIMEOUT: 10000,
     ENDPOINTS: {
         BILL: {
