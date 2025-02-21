@@ -19,7 +19,7 @@ export default defineConfig({
         open: true,
         proxy: {
             '/api': {
-                target: 'http://95.217.113.101',
+                target: 'https://energycove.pythonanywhere.com',
                 changeOrigin: true,
                 secure: false,
             }
