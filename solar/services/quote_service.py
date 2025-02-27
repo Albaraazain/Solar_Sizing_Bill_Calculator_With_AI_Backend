@@ -39,7 +39,7 @@ class QuoteService(BaseService):
             # Enhanced debugging
             logger.info("=== Starting Quote Generation ===")
             logger.info(f"Received bill data: {bill_data}")
-            
+            print(bill_data)
             # Data sanitization
             sanitized_data = {
                 'reference_number': str(bill_data.get('reference_number', '')).strip(),
@@ -47,12 +47,13 @@ class QuoteService(BaseService):
                 'amount': float(bill_data.get('amount', 0)),
                 'total_yearly_units': float(bill_data.get('total_yearly_units', 0)),
                 'customer_name': str(bill_data.get('customer_name', '')).strip(),
+                'customer_address': str(bill_data.get('customer_address', '')).strip(),
                 'issue_date': bill_data.get('issue_date'),
                 'due_date': bill_data.get('due_date')
             }
             
             logger.info(f"Sanitized data: {sanitized_data}")
-
+            print(sanitized_data)
             # Validate required fields
             required_fields = ['reference_number', 'units_consumed', 'amount', 'total_yearly_units']
             missing_fields = [field for field in required_fields if not sanitized_data.get(field)]
@@ -110,13 +111,17 @@ class QuoteService(BaseService):
                     'panelCount': panels_needed,
                     'panelType': {
                         'brand': panel.brand,
-                        'power': float(panel.power)
+                        'power': float(panel.power),
+                        'price': float(panel.price) #* panels_needed * panel.power
                     },
                     'inverterType': {
                         'brand': inverter.brand,
-                        'power': float(inverter.power)
+                        'power': float(inverter.power),
+                        'price': float(inverter.price)
                     },
-                    'roofArea': panels_needed * 2,  # 2 sq meters per panel
+                    'roofArea': panels_needed * 2, 
+                    'customer_name': sanitized_data['customer_name'],
+                    'customer_address': sanitized_data['customer_address'],
                     'installationTime': cls._estimate_installation_time(system_size),
                     'warranty': {
                         'panels': '25 years',
@@ -237,8 +242,8 @@ class QuoteService(BaseService):
                 'ac_cable': bracket_costs['ac_cable'],
                 'accessories': bracket_costs['accessories'],
                 'transport': cls._calculate_transport_cost(system_size),
-                'margin': cls._calculate_margin(system_size),
-                'vat': cls._calculate_vat(system_size)
+                'margin': 0,
+                'vat': 0
             }
 
             logger.info(f"Final calculated costs: {costs}")
@@ -398,8 +403,14 @@ class QuoteService(BaseService):
     @staticmethod
     def _calculate_transport_cost(system_size: float) -> float:
         """Calculate transportation cost based on system size."""
-        base_cost = 10000  # Base transport cost
-        return base_cost * math.ceil(system_size / 5)  # Increase per 5kW
+        try:
+            transport_cost = VariableCosts.objects.get(cost_name='Transport Cost').cost
+            return float(transport_cost)
+        except VariableCosts.DoesNotExist:
+            raise AppError(
+                message='Transport Cost not found in variable costs',
+                code='COST_ERROR'
+            )
 
     @staticmethod
     def _calculate_margin(system_size: float) -> float:

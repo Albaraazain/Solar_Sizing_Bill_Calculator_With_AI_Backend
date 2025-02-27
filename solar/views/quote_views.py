@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
-
+from solar.invoice_generator.invoicemaker import generate_invoice
 from ..services.quote_service import QuoteService
 from ..services.bill_service import BillService
 from ..middleware.error_handler import AppError
@@ -44,6 +44,31 @@ class QuoteGenerateAPIView(APIView):
             # Log the data being passed to the service
             logger.info("Passing to quote service:", request.data)
             quote_data = QuoteService.generate_quote(request.data)
+            print(quote_data)
+            customer_name = quote_data['data']['systemDetails']['customer_name']
+            customer_address = 'Not specified'
+            customer_phone = '034512152266'
+            system_size = quote_data['data']['systemDetails']['systemSize']
+            panels = quote_data['data']['systemDetails']['panelCount']
+            panel_power = quote_data['data']['systemDetails']['panelType']['power']
+            inverter_price = quote_data['data']['systemDetails']['inverterType']['price']
+            inverter_brand = quote_data['data']['systemDetails']['inverterType']['brand']
+            panel_price = quote_data['data']['systemDetails']['panelType']['price'] * panel_power * panels
+            net_metering = quote_data['data']['costs']['details']['net_metering']['amount']
+            installation_costs = quote_data['data']['costs']['details']['installation']['amount']
+            dc_cable = quote_data['data']['costs']['details']['dc_cable']['amount']
+            ac_cable = quote_data['data']['costs']['details']['ac_cable']['amount']
+            cabling_costs = dc_cable + ac_cable
+            frame_costs = quote_data['data']['costs']['details']['frame']['amount']
+            electrical_and_mechanical_costs = 50000
+            total_cost = installation_costs + cabling_costs + frame_costs + electrical_and_mechanical_costs + panel_price + inverter_price + net_metering
+            print(customer_name)
+            print("Making invoice...")
+            generate_invoice(system_size, panels, panel_power, inverter_price,
+                     inverter_brand, panel_price, net_metering,
+                     installation_costs, cabling_costs, frame_costs,
+                     electrical_and_mechanical_costs, total_cost, customer_name, customer_address, customer_phone)
+            print("Invoice made and sent")
             return Response(quote_data)
 
         except Exception as e:

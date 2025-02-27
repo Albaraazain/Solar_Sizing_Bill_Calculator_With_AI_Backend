@@ -721,3 +721,392 @@ Traceback (most recent call last):
   File "C:\Projects\Mustafa\NOTFINAL\SOLARSIZING\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 249, in _get_all_costs
     raise AppError(
 solar.middleware.error_handler.AppError: Failed to retrieve costs
+ERROR 2025-02-27 00:35:05,610 quote_views 27356 14744 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 50, in post
+    generate_invoice(quote_data)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+TypeError: generate_invoice() missing 14 required positional arguments: 'panel_amount', 'panel_power', 'price_of_inverter', 'brand_of_inverter', 'price_of_panels', 'netmetering_costs', 'installation_costs', 'cabling_costs', 'structure_costs', 'electrical_and_mechanical_costs', 'total_cost', 'customer_name', 'customer_address', and 'customer_contact'
+ERROR 2025-02-27 00:35:37,862 quote_views 27356 14744 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 50, in post
+    generate_invoice(quote_data)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+TypeError: generate_invoice() missing 14 required positional arguments: 'panel_amount', 'panel_power', 'price_of_inverter', 'brand_of_inverter', 'price_of_panels', 'netmetering_costs', 'installation_costs', 'cabling_costs', 'structure_costs', 'electrical_and_mechanical_costs', 'total_cost', 'customer_name', 'customer_address', and 'customer_contact'
+ERROR 2025-02-27 01:09:05,897 quote_service 25008 10388 Unexpected error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+ERROR 2025-02-27 01:09:05,898 quote_views 25008 10388 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 156, in generate_quote
+    raise AppError(
+    ...<3 lines>...
+    )
+solar.middleware.error_handler.AppError: Failed to generate quote
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Raw quote generation request data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Request content type: application/json
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Field units_consumed: value=388, type=<class 'int'>
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Field amount: value=25836, type=<class 'int'>
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Field total_yearly_units: value=10020, type=<class 'int'>
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Converted values - units: 388.0, amount: 25836.0, yearly: 10020.0
+INFO 2025-02-27 01:11:31,429 quote_views 3332 16808 Passing to quote service:
+INFO 2025-02-27 01:11:31,429 quote_service 3332 16808 === Starting Quote Generation ===
+INFO 2025-02-27 01:11:31,429 quote_service 3332 16808 Received bill data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:11:31,430 quote_service 3332 16808 Sanitized data: {'reference_number': '04151722337322', 'units_consumed': 388.0, 'amount': 25836.0, 'total_yearly_units': 10020.0, 'customer_name': 'MUHAMMAD ARIF', 'customer_address': '', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:11:31,430 quote_service 3332 16808 Calculated system size: 13kW
+INFO 2025-02-27 01:11:31,433 quote_service 3332 16808 Components selected - Panel: Canada Solar, Count: 23, Inverter: MaxPower
+INFO 2025-02-27 01:11:31,433 quote_service 3332 16808 Calculating costs for 13kW system with 23 panels
+INFO 2025-02-27 01:11:31,434 inventory_service 3332 16808 Fetching bracket costs for system size: 13kW
+INFO 2025-02-27 01:11:31,435 inventory_service 3332 16808 Retrieved costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:11:31,435 quote_service 3332 16808 Retrieved bracket costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:11:31,435 quote_service 3332 16808 Final calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0}
+INFO 2025-02-27 01:11:31,436 quote_service 3332 16808 Calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0}
+ERROR 2025-02-27 01:11:31,436 quote_service 3332 16808 Unexpected error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+ERROR 2025-02-27 01:11:31,437 quote_views 3332 16808 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 156, in generate_quote
+    raise AppError(
+    ...<3 lines>...
+    )
+solar.middleware.error_handler.AppError: Failed to generate quote
+INFO 2025-02-27 01:11:52,355 quote_views 27204 18400 Raw quote generation request data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:11:52,355 quote_views 27204 18400 Request content type: application/json
+INFO 2025-02-27 01:11:52,355 quote_views 27204 18400 Field units_consumed: value=388, type=<class 'int'>
+INFO 2025-02-27 01:11:52,356 quote_views 27204 18400 Field amount: value=25836, type=<class 'int'>
+INFO 2025-02-27 01:11:52,356 quote_views 27204 18400 Field total_yearly_units: value=10020, type=<class 'int'>
+INFO 2025-02-27 01:11:52,356 quote_views 27204 18400 Converted values - units: 388.0, amount: 25836.0, yearly: 10020.0
+INFO 2025-02-27 01:11:52,356 quote_views 27204 18400 Passing to quote service:
+INFO 2025-02-27 01:11:52,356 quote_service 27204 18400 === Starting Quote Generation ===
+INFO 2025-02-27 01:11:52,356 quote_service 27204 18400 Received bill data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:11:52,356 quote_service 27204 18400 Sanitized data: {'reference_number': '04151722337322', 'units_consumed': 388.0, 'amount': 25836.0, 'total_yearly_units': 10020.0, 'customer_name': 'MUHAMMAD ARIF', 'customer_address': '', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:11:52,356 quote_service 27204 18400 Calculated system size: 13kW
+INFO 2025-02-27 01:11:52,361 quote_service 27204 18400 Components selected - Panel: Canada Solar, Count: 23, Inverter: MaxPower
+INFO 2025-02-27 01:11:52,362 quote_service 27204 18400 Calculating costs for 13kW system with 23 panels
+INFO 2025-02-27 01:11:52,363 inventory_service 27204 18400 Fetching bracket costs for system size: 13kW
+INFO 2025-02-27 01:11:52,364 inventory_service 27204 18400 Retrieved costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:11:52,364 quote_service 27204 18400 Retrieved bracket costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:11:52,365 quote_service 27204 18400 Final calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0}
+INFO 2025-02-27 01:11:52,365 quote_service 27204 18400 Calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0}
+ERROR 2025-02-27 01:11:52,365 quote_service 27204 18400 Unexpected error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+ERROR 2025-02-27 01:11:52,366 quote_views 27204 18400 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 156, in generate_quote
+    raise AppError(
+    ...<3 lines>...
+    )
+solar.middleware.error_handler.AppError: Failed to generate quote
+INFO 2025-02-27 01:13:21,018 quote_views 1992 1476 Raw quote generation request data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:13:21,019 quote_views 1992 1476 Request content type: application/json
+INFO 2025-02-27 01:13:21,019 quote_views 1992 1476 Field units_consumed: value=388, type=<class 'int'>
+INFO 2025-02-27 01:13:21,019 quote_views 1992 1476 Field amount: value=25836, type=<class 'int'>
+INFO 2025-02-27 01:13:21,019 quote_views 1992 1476 Field total_yearly_units: value=10020, type=<class 'int'>
+INFO 2025-02-27 01:13:21,019 quote_views 1992 1476 Converted values - units: 388.0, amount: 25836.0, yearly: 10020.0
+INFO 2025-02-27 01:13:21,019 quote_views 1992 1476 Passing to quote service:
+INFO 2025-02-27 01:13:21,019 quote_service 1992 1476 === Starting Quote Generation ===
+INFO 2025-02-27 01:13:21,019 quote_service 1992 1476 Received bill data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:13:21,019 quote_service 1992 1476 Sanitized data: {'reference_number': '04151722337322', 'units_consumed': 388.0, 'amount': 25836.0, 'total_yearly_units': 10020.0, 'customer_name': 'MUHAMMAD ARIF', 'customer_address': '', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:13:21,019 quote_service 1992 1476 Calculated system size: 13kW
+INFO 2025-02-27 01:13:21,023 quote_service 1992 1476 Components selected - Panel: Canada Solar, Count: 23, Inverter: MaxPower
+INFO 2025-02-27 01:13:21,023 quote_service 1992 1476 Calculating costs for 13kW system with 23 panels
+INFO 2025-02-27 01:13:21,023 inventory_service 1992 1476 Fetching bracket costs for system size: 13kW
+INFO 2025-02-27 01:13:21,024 inventory_service 1992 1476 Retrieved costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:13:21,024 quote_service 1992 1476 Retrieved bracket costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:13:21,025 quote_service 1992 1476 Final calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0, 'margin': 0, 'vat': 0}
+INFO 2025-02-27 01:13:21,025 quote_service 1992 1476 Calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0, 'margin': 0, 'vat': 0}
+ERROR 2025-02-27 01:13:21,025 quote_service 1992 1476 Unexpected error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+ERROR 2025-02-27 01:13:21,026 quote_views 1992 1476 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 115, in generate_quote
+    'price': float(panel.price) * panels_needed * panel.power
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for *: 'float' and 'decimal.Decimal'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 156, in generate_quote
+    raise AppError(
+    ...<3 lines>...
+    )
+solar.middleware.error_handler.AppError: Failed to generate quote
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Raw quote generation request data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Request content type: application/json
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Field units_consumed: value=388, type=<class 'int'>
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Field amount: value=25836, type=<class 'int'>
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Field total_yearly_units: value=10020, type=<class 'int'>
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Converted values - units: 388.0, amount: 25836.0, yearly: 10020.0
+INFO 2025-02-27 01:14:18,633 quote_views 22052 13096 Passing to quote service:
+INFO 2025-02-27 01:14:18,634 quote_service 22052 13096 === Starting Quote Generation ===
+INFO 2025-02-27 01:14:18,634 quote_service 22052 13096 Received bill data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:14:18,634 quote_service 22052 13096 Sanitized data: {'reference_number': '04151722337322', 'units_consumed': 388.0, 'amount': 25836.0, 'total_yearly_units': 10020.0, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:14:18,634 quote_service 22052 13096 Calculated system size: 13kW
+INFO 2025-02-27 01:14:18,637 quote_service 22052 13096 Components selected - Panel: Canada Solar, Count: 23, Inverter: MaxPower
+INFO 2025-02-27 01:14:18,638 quote_service 22052 13096 Calculating costs for 13kW system with 23 panels
+INFO 2025-02-27 01:14:18,638 inventory_service 22052 13096 Fetching bracket costs for system size: 13kW
+INFO 2025-02-27 01:14:18,639 inventory_service 22052 13096 Retrieved costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:14:18,639 quote_service 22052 13096 Retrieved bracket costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:14:18,639 quote_service 22052 13096 Final calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0, 'margin': 0, 'vat': 0}
+INFO 2025-02-27 01:14:18,639 quote_service 22052 13096 Calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0, 'margin': 0, 'vat': 0}
+ERROR 2025-02-27 01:14:18,640 quote_service 22052 13096 Missing required field: 'customer_address'
+ERROR 2025-02-27 01:14:18,640 quote_views 22052 13096 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 124, in generate_quote
+    'customer_address': sanitized_data['customer_address'],
+                        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'customer_address'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 143, in generate_quote
+    raise AppError(
+    ...<2 lines>...
+    )
+solar.middleware.error_handler.AppError: Missing required field: 'customer_address'
+INFO 2025-02-27 01:14:51,933 quote_views 25448 25404 Raw quote generation request data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:14:51,933 quote_views 25448 25404 Request content type: application/json
+INFO 2025-02-27 01:14:51,933 quote_views 25448 25404 Field units_consumed: value=388, type=<class 'int'>
+INFO 2025-02-27 01:14:51,933 quote_views 25448 25404 Field amount: value=25836, type=<class 'int'>
+INFO 2025-02-27 01:14:51,934 quote_views 25448 25404 Field total_yearly_units: value=10020, type=<class 'int'>
+INFO 2025-02-27 01:14:51,934 quote_views 25448 25404 Converted values - units: 388.0, amount: 25836.0, yearly: 10020.0
+INFO 2025-02-27 01:14:51,934 quote_views 25448 25404 Passing to quote service:
+INFO 2025-02-27 01:14:51,934 quote_service 25448 25404 === Starting Quote Generation ===
+INFO 2025-02-27 01:14:51,934 quote_service 25448 25404 Received bill data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:14:51,934 quote_service 25448 25404 Sanitized data: {'reference_number': '04151722337322', 'units_consumed': 388.0, 'amount': 25836.0, 'total_yearly_units': 10020.0, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:14:51,934 quote_service 25448 25404 Calculated system size: 13kW
+INFO 2025-02-27 01:14:51,937 quote_service 25448 25404 Components selected - Panel: Canada Solar, Count: 23, Inverter: MaxPower
+INFO 2025-02-27 01:14:51,938 quote_service 25448 25404 Calculating costs for 13kW system with 23 panels
+INFO 2025-02-27 01:14:51,938 inventory_service 25448 25404 Fetching bracket costs for system size: 13kW
+INFO 2025-02-27 01:14:51,939 inventory_service 25448 25404 Retrieved costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:14:51,939 quote_service 25448 25404 Retrieved bracket costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:14:51,940 quote_service 25448 25404 Final calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0, 'margin': 0, 'vat': 0}
+INFO 2025-02-27 01:14:51,940 quote_service 25448 25404 Calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'transport': 200.0, 'margin': 0, 'vat': 0}
+ERROR 2025-02-27 01:14:51,940 quote_service 25448 25404 Missing required field: 'customer_address'
+ERROR 2025-02-27 01:14:51,940 quote_views 25448 25404 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 124, in generate_quote
+    'customer_address': sanitized_data['customer_address'],
+                        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'customer_address'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 143, in generate_quote
+    raise AppError(
+    ...<2 lines>...
+    )
+solar.middleware.error_handler.AppError: Missing required field: 'customer_address'
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Raw quote generation request data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Request content type: application/json
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Field units_consumed: value=388, type=<class 'int'>
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Field amount: value=25836, type=<class 'int'>
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Field total_yearly_units: value=10020, type=<class 'int'>
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Converted values - units: 388.0, amount: 25836.0, yearly: 10020.0
+INFO 2025-02-27 01:17:48,199 quote_views 25572 25444 Passing to quote service:
+INFO 2025-02-27 01:17:48,200 quote_service 25572 25444 === Starting Quote Generation ===
+INFO 2025-02-27 01:17:48,200 quote_service 25572 25444 Received bill data: {'reference_number': '04151722337322', 'units_consumed': 388, 'amount': 25836, 'total_yearly_units': 10020, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:17:48,200 quote_service 25572 25444 Sanitized data: {'reference_number': '04151722337322', 'units_consumed': 388.0, 'amount': 25836.0, 'total_yearly_units': 10020.0, 'customer_name': 'MUHAMMAD ARIF', 'issue_date': '2025-02-14', 'due_date': '2025-02-23'}
+INFO 2025-02-27 01:17:48,200 quote_service 25572 25444 Calculated system size: 13kW
+INFO 2025-02-27 01:17:48,203 quote_service 25572 25444 Components selected - Panel: Canada Solar, Count: 23, Inverter: MaxPower
+INFO 2025-02-27 01:17:48,203 quote_service 25572 25444 Calculating costs for 13kW system with 23 panels
+INFO 2025-02-27 01:17:48,203 inventory_service 25572 25444 Fetching bracket costs for system size: 13kW
+INFO 2025-02-27 01:17:48,204 inventory_service 25572 25444 Retrieved costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:17:48,204 quote_service 25572 25444 Retrieved bracket costs: {'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0}
+INFO 2025-02-27 01:17:48,204 quote_service 25572 25444 Final calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'margin': 0, 'vat': 0}
+INFO 2025-02-27 01:17:48,204 quote_service 25572 25444 Calculated costs: {'net_metering': 250000.0, 'installation': 105300.0, 'frame': 70200.0, 'labor': 104.0, 'dc_cable': 15000.0, 'ac_cable': 10000.0, 'accessories': 20000.0, 'margin': 0, 'vat': 0}
+ERROR 2025-02-27 01:17:48,204 quote_service 25572 25444 Missing required field: 'customer_address'
+ERROR 2025-02-27 01:17:48,204 quote_views 25572 25444 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 124, in generate_quote
+    'customer_address': sanitized_data['customer_address'],
+                        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'customer_address'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 143, in generate_quote
+    raise AppError(
+    ...<2 lines>...
+    )
+solar.middleware.error_handler.AppError: Missing required field: 'customer_address'
+ERROR 2025-02-27 01:20:04,467 quote_service 15832 27048 Missing required field: 'customer_address'
+ERROR 2025-02-27 01:20:04,467 quote_views 15832 27048 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 124, in generate_quote
+    'customer_address': sanitized_data['customer_address'],
+                        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'customer_address'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 143, in generate_quote
+    raise AppError(
+    ...<2 lines>...
+    )
+solar.middleware.error_handler.AppError: Missing required field: 'customer_address'
+ERROR 2025-02-27 01:20:28,038 quote_service 16900 12524 Missing required field: 'customer_address'
+ERROR 2025-02-27 01:20:28,038 quote_views 16900 12524 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 124, in generate_quote
+    'customer_address': sanitized_data['customer_address'],
+                        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'customer_address'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 143, in generate_quote
+    raise AppError(
+    ...<2 lines>...
+    )
+solar.middleware.error_handler.AppError: Missing required field: 'customer_address'
+ERROR 2025-02-27 01:20:57,384 quote_service 14880 2480 Missing required field: 'transport'
+ERROR 2025-02-27 01:20:57,384 quote_views 14880 2480 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 135, in generate_quote
+    'costs': cls._format_costs_breakdown(costs)
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 452, in _format_costs_breakdown
+    costs['transport'],
+    ~~~~~^^^^^^^^^^^^^
+KeyError: 'transport'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 46, in post
+    quote_data = QuoteService.generate_quote(request.data)
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\services\quote_service.py", line 143, in generate_quote
+    raise AppError(
+    ...<2 lines>...
+    )
+solar.middleware.error_handler.AppError: Missing required field: 'transport'
+ERROR 2025-02-28 01:12:04,921 quote_views 22784 9976 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 51, in post
+    system_size = quote_data['data']['systemDetails']['system_size']
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'system_size'
+ERROR 2025-02-28 01:12:49,937 quote_views 7548 15912 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 51, in post
+    system_size = quote_data['data']['systemDetails']['system_size']
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'system_size'
+ERROR 2025-02-28 01:13:20,921 quote_views 12456 10100 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 59, in post
+    cabling_costs = int(quote_data['data']['costs']['details']['dc_cabling']) + int(quote_data['data']['costs']['details']['ac_cabling'])
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+KeyError: 'dc_cabling'
+ERROR 2025-02-28 01:14:49,563 quote_views 4380 7944 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 59, in post
+    cabling_costs = int(quote_data['data']['costs']['details']['dc_cable']) + int(quote_data['data']['costs']['details']['ac_cable'])
+                    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'dict'
+ERROR 2025-02-28 01:16:08,572 quote_views 22012 1828 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 61, in post
+    cabling_costs = dc_cable + ac_cable
+                    ~~~~~~~~~^~~~~~~~~~
+TypeError: unsupported operand type(s) for +: 'dict' and 'dict'
+ERROR 2025-02-28 01:18:05,997 quote_views 17568 19180 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 59, in post
+    dc_cable = quote_data['data']['costs']['details']['dc_cable']['cost']
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'cost'
+ERROR 2025-02-28 01:19:37,599 quote_views 22144 18884 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 66, in post
+    generate_invoice(system_size, panels, panel_power, inverter_price,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             inverter_brand, panel_price, net_metering,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             installation_costs, cabling_costs, frame_costs,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             electrical_and_mechanical_costs, total_cost, customer_name, customer_address, customer_phone)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\invoice_generator\invoicemaker.py", line 232, in generate_invoice
+    pdf.cell(20, 20, txt=f"{int(float(structure_costs))}", border="L,R,T", ln=1, align="R", fill=True)
+                                ~~~~~^^^^^^^^^^^^^^^^^
+TypeError: float() argument must be a string or a real number, not 'dict'
+ERROR 2025-02-28 01:20:30,856 quote_views 14276 8992 Error in quote generation
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\quote_views.py", line 67, in post
+    generate_invoice(system_size, panels, panel_power, inverter_price,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             inverter_brand, panel_price, net_metering,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             installation_costs, cabling_costs, frame_costs,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             electrical_and_mechanical_costs, total_cost, customer_name, customer_address, customer_phone)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\invoice_generator\invoicemaker.py", line 233, in generate_invoice
+    pdf.cell(20, 20, txt=f"{int(float(structure_costs))}", border="L,R,T", ln=1, align="R", fill=True)
+                                ~~~~~^^^^^^^^^^^^^^^^^
+TypeError: float() argument must be a string or a real number, not 'dict'

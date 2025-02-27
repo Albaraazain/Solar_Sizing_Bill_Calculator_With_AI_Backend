@@ -123,6 +123,7 @@ def send_email_with_attachment(subject, body, to_email, attachment_path):
     server.login(from_email, from_password)  # login with your email and password
     text = msg.as_string()
     server.sendmail(from_email, to_email, text)
+    print(f"Email sent to {to_email}")
     server.quit()
     
 
@@ -131,6 +132,7 @@ def generate_invoice(system_size, panel_amount, panel_power, price_of_inverter,
                      installation_costs, cabling_costs, structure_costs,
                      electrical_and_mechanical_costs, total_cost, customer_name, customer_address, customer_contact):
     # Create a pdf object with modified document dimensions
+    print("Generating invoice inside function...")
     pdf = fpdf.FPDF(format=(260, 420))
     pdf.add_page()
     # Set the font and color

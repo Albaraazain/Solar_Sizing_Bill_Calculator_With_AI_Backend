@@ -1,7 +1,7 @@
 // path: frontend/src/api/client/apiConfig.js
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_URL || 'https://energycove.pythonanywhere.com/api',
-    TIMEOUT: 10000,
+    BASE_URL: import.meta.env.VITE_API_URL || 'http://127.0.0.1/api',
+    TIMEOUT: 60000,
     ENDPOINTS: {
         BILL: {
             BASE: '/bill',
