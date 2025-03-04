@@ -122,3 +122,8 @@ class Document(models.Model):
             'reference_number': self.reference_number,
             'metadata': self.metadata
         }
+    
+class StructureType(models.Model):
+    l2 = models.BooleanField(default=False)
+    custom_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    abs_cost = models.DecimalField(max_digits=10, decimal_places=2)

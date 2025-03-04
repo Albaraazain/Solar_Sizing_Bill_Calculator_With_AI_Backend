@@ -143,7 +143,7 @@ class QuoteService(BaseService):
             raise AppError(
                 message=f'Missing required field: {str(e)}',
                 code='VALIDATION_ERROR'
-            )
+            )   
         except ValueError as e:
             logger.error(f"Value conversion error: {e}")
             raise AppError(

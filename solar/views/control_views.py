@@ -4,7 +4,7 @@ from solar.invoice_generator.invoicemaker import generate_invoice
 from solar.invoice_generator.bill_verify import verify_bill
 from solar.invoice_generator.bill_parser_ind import parse_electricity_bill_industrial
 from solar.invoice_generator.bill_parser_gen import parse_electricity_bill_general
-from solar.models import Panel, Inverter, PotentialCustomers, VariableCosts, BracketCosts
+from solar.models import Panel, Inverter, PotentialCustomers, VariableCosts, BracketCosts, StructureType
 import math
 from django.http import JsonResponse
 from django.contrib.auth.decorators import user_passes_test
@@ -133,14 +133,37 @@ def inverter_detail(request, id):
 def set_prices(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        variableCosts.objects.update_or_create(
+        VariableCosts.objects.update_or_create(
             cost_name='Frame Cost per Watt', defaults={'cost': data['pricePerWatt']}
         )
-        variableCosts.objects.update_or_create(
+        VariableCosts.objects.update_or_create(
             cost_name='Installation Cost per Watt', defaults={'cost': data['installationCost']}
         )
-        variableCosts.objects.update_or_create(
+        VariableCosts.objects.update_or_create(
             cost_name='Net Metering', defaults={'cost': data['netMetering']}
+        )
+        VariableCosts.objects.update_or_create(
+            cost_name='DC Wire Roll', defaults={'cost': data['dcRoll']}
+        )
+        VariableCosts.objects.update_or_create(
+            cost_name='AC Cable', defaults={'cost': data['acCable']}
+        )
+        VariableCosts.objects.update_or_create(
+            cost_name='Transport Cost', defaults={'cost': data['transport']}
+        )
+        VariableCosts.objects.update_or_create(
+            cost_name='Accessories', defaults={'cost': data['accessories']}
+        )
+        VariableCosts.objects.update_or_create(
+            cost_name='Labor Cost', defaults={'cost': data['labor']}
+        )
+        StructureType.objects.update_or_create(
+            pk=1,  # Assuming there's only one record
+            defaults={
+                'l2': data['l2'],
+                'custom_cost': data['customCost'],
+                'abs_cost': data['absCost']
+            }
         )
         return JsonResponse({"status": "success"}, status=200)
 
@@ -155,13 +178,26 @@ def customer_list(request):
 #@user_passes_test(lambda u: u.is_staff)
 def get_prices(request):
     if request.method == 'GET':
-        frame_cost = variableCosts.objects.filter(cost_name='Frame Cost per Watt').first()
-        installation_cost = variableCosts.objects.filter(cost_name='Installation Cost per Watt').first()
-        net_metering = variableCosts.objects.filter(cost_name='Net Metering').first()
-        print(net_metering.cost)
+        structure = StructureType.objects.first()
+        installation_cost = VariableCosts.objects.filter(cost_name='Installation Cost per Watt').first()
+        net_metering = VariableCosts.objects.filter(cost_name='Net Metering').first()
+        dc_roll_cost = VariableCosts.objects.filter(cost_name='DC Wire Roll').first()
+        ac_wire_cost = VariableCosts.objects.filter(cost_name='AC Cable').first()
+        transport_cost = VariableCosts.objects.filter(cost_name='Transport Cost').first()
+        accessories_cost = VariableCosts.objects.filter(cost_name='Accessories').first()
+        labour_cost = VariableCosts.objects.filter(cost_name='Labor Cost').first()
+        l2 = structure.l2 if structure else ''
+        #print(net_metering.cost)
         response_data = {
-            'frame_cost_per_watt': frame_cost.cost if frame_cost else '',
+            'custom_frame_cost_per_watt': structure.custom_cost if structure.custom_cost else '',
+            'abs_frame_cost_per_watt': structure.abs_cost if structure else '',
             'installation_cost_per_watt': installation_cost.cost if installation_cost else '',
-            'net_metering': net_metering.cost if net_metering else ''
+            'net_metering': net_metering.cost if net_metering else '',
+            'dc_roll_cost': dc_roll_cost.cost if dc_roll_cost else '',
+            'ac_wire_cost': ac_wire_cost.cost if ac_wire_cost else '',
+            'transport_cost': transport_cost.cost if transport_cost else '',
+            'accessories_cost': accessories_cost.cost if accessories_cost else '',
+            'labour_cost': labour_cost.cost if labour_cost else '',
+            'l2': l2
         }
         return JsonResponse(response_data, safe=False)

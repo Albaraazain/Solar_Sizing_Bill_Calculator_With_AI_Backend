@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {% load static %}
     <meta charset="UTF-8">
@@ -7,6 +8,7 @@
     <title>Solar Application Control Panel</title>
     <link rel="stylesheet" href="{% static 'solar/css/control.css' %}">
 </head>
+
 <body>
     {% csrf_token %}
     <div class="container">
@@ -61,24 +63,63 @@
         <div class="section cost-section">
             <h2>Set Prices</h2>
             <div class="price-container">
-                <label for="price-per-watt">Frame Cost per Watt</label>
-                <input type="number" id="price-per-watt" placeholder="Frame Cost per Watt"><br>
+                <label for="custom-cost">Frame Cost per Watt (Custom)</label>
+                <input type="number" id="custom-cost" placeholder="Frame Cost per Watt (Custom)"><br>
             </div>
-            
+
+            <div class="price-container">
+                <label for="abs-cost">Frame Cost per Watt (Absolute)</label>
+                <input type="number" id="abs-cost" placeholder="Frame Cost per Watt (Absolute)"><br>
+            </div>
+
             <div class="price-container">
                 <label for="installation-cost">Installation Cost per Watt</label>
                 <input type="number" id="installation-cost" placeholder="Installation Cost per Watt"><br>
             </div>
-            
+
+            <div class="price-container">
+                <label for="dc-cable-cost">DC Cable Roll</label>
+                <input type="number" id="dc-cable-cost" placeholder="DC Cable Roll Cost"><br>
+            </div>
+
+            <div class="price-container">
+                <label for="ac-cable-cost">AC Cable</label>
+                <input type="number" id="ac-cable-cost" placeholder="AC Cable Cost"><br>
+            </div>
+
+            <div class="price-container">
+                <label for="transport-cost">Transport Cost</label>
+                <input type="number" id="transport-cost" placeholder="Transport Cost"><br>
+            </div>
+
+            <div class="price-container">
+                <label for="accessories-cost">Accessories</label>
+                <input type="number" id="accessories-cost" placeholder="Accessories Cost"><br>
+            </div>
+
+            <div class="price-container">
+                <label for="labor-cost">Labor Cost</label>
+                <input type="number" id="labor-cost" placeholder="Labor Cost"><br>
+            </div>
+
+            <div class="price-container">
+                <label for="l2-select">Use L2 (Custom)?</label>
+                <select id="l2-select">
+                    <option value="True">True (Custom)</option>
+                    <option value="False">False (Absolute)</option>
+                </select><br>
+            </div>
+
             <div class="price-container">
                 <label for="net-metering">Net Metering</label>
                 <input type="number" id="net-metering" placeholder="Net Metering"><br>
             </div>
 
             <button onclick="setPrices()">Set Prices</button>
-            
+
         </div>
     </div>
     <script src="{% static 'solar/js/control.js' %}"></script>
 </body>
+
 </html>

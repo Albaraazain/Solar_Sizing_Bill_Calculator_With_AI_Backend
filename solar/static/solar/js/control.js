@@ -223,20 +223,45 @@ function deleteInverter(id) {
 }
 
 function setPrices() {
-    const pricePerWatt = document.getElementById('price-per-watt').value;
+    const customCost = document.getElementById('custom-cost').value;
+    const absCost = document.getElementById('abs-cost').value;
+    const pricePerWatt = document.getElementById('price-per-watt') ? document.getElementById('price-per-watt').value : customCost;
     const installationCost = document.getElementById('installation-cost').value;
+    const dcRoll = document.getElementById('dc-cable-cost').value;
+    const acCable = document.getElementById('ac-cable-cost').value;
+    const transport = document.getElementById('transport-cost').value;
+    const accessories = document.getElementById('accessories-cost').value;
+    const labor = document.getElementById('labor-cost').value;
+    const l2Value = document.getElementById('l2-select').value;
+    const l2 = (l2Value === 'True');
     const netMetering = document.getElementById('net-metering').value;
-    
+
     fetch('/api/set-prices/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
-        body: JSON.stringify({ pricePerWatt, installationCost, netMetering })
-    }).then(response => response.json())
+        body: JSON.stringify({
+            pricePerWatt,
+            installationCost,
+            netMetering,
+            dcRoll,
+            acCable,
+            transport,
+            accessories,
+            labor,
+            l2,
+            customCost,
+            absCost
+        })
+    })
+    .then(response => response.json())
     .then(data => {
         alert('Prices set successfully!');
+    })
+    .catch(error => {
+        alert('Error setting prices: ' + error);
     });
 }
 
@@ -248,8 +273,27 @@ function fetchPrices() {
     fetch('/api/get-prices/')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('price-per-watt').value = data.frame_cost_per_watt || '';
+            // Frame costs
+            document.getElementById('custom-cost').value = data.custom_frame_cost_per_watt || '';
+            document.getElementById('abs-cost').value = data.abs_frame_cost_per_watt || '';
+
+            // Other variable costs
             document.getElementById('installation-cost').value = data.installation_cost_per_watt || '';
+            document.getElementById('dc-cable-cost').value = data.dc_roll_cost || '';
+            document.getElementById('ac-cable-cost').value = data.ac_wire_cost || '';
+            document.getElementById('transport-cost').value = data.transport_cost || '';
+            document.getElementById('accessories-cost').value = data.accessories_cost || '';
+            document.getElementById('labor-cost').value = data.labour_cost || '';
+
+            // Net metering
             document.getElementById('net-metering').value = data.net_metering || '';
+
+            // L2 flag (True/False)
+            if (data.l2 !== undefined) {
+                document.getElementById('l2-select').value = data.l2 ? 'True' : 'False';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching prices:', error);
         });
 }

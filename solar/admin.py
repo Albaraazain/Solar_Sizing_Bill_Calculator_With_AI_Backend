@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Panel, Inverter, VariableCosts, BracketCosts, 
-    Bill, Quote, Document, PotentialCustomers
+    Bill, Quote, Document, PotentialCustomers, StructureType
 )
 
 class PanelAdmin(admin.ModelAdmin):
@@ -15,6 +15,11 @@ class PotentialCustomersAdmin(admin.ModelAdmin):
 
 class VariableCostsAdmin(admin.ModelAdmin):
     list_display = ('cost_name', 'cost')
+
+class StructureTypeAdmin(admin.ModelAdmin):
+    list_display = ('l2', 'custom_cost', 'abs_cost')
+
+admin.site.register(StructureType, StructureTypeAdmin)
 
 @admin.register(BracketCosts)
 class BracketCostsAdmin(admin.ModelAdmin):
