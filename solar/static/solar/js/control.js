@@ -65,7 +65,7 @@ function fetchInverters() {
             data.forEach(inverter => {
                 inverterList.innerHTML += `
                     <div>
-                        ${inverter.brand} - PKR ${inverter.price} - ${inverter.power}W
+                        ${inverter.brand} - PKR ${inverter.price} - ${inverter.power} kW
                         <button onclick="showEditInverterForm(${inverter.id}, '${inverter.brand}', ${inverter.price}, ${inverter.power})">Edit</button>
                         <button onclick="deleteInverter(${inverter.id})">Delete</button>
                     </div>

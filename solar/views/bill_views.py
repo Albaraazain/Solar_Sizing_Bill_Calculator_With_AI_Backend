@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 class BillValidateAPIView(APIView):
     def post(self, request):
         try:
+            print("Getting reference number")
             reference_number = request.data.get('reference_number')
-            
+            print(request.data)
             if not reference_number:
                 return Response({
                     'success': False,
@@ -25,6 +26,7 @@ class BillValidateAPIView(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             # Use BillService to validate
+            print("Validating bill")
             result = BillService.validate_bill(reference_number)
             
             if not result.get('data', {}).get('isValid', False):
@@ -55,7 +57,8 @@ class BillValidateAPIView(APIView):
                 'success': False,
                 'error': {
                     'message': 'Unable to validate bill at this time. Please try again later.',
-                    'code': 'SERVER_ERROR'
+                    'code': 'SERVER_ERROR',
+                    'reference_number': request.data.get('reference_number')
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             

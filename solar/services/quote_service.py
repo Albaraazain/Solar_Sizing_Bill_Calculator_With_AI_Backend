@@ -111,8 +111,8 @@ class QuoteService(BaseService):
                     'panelCount': panels_needed,
                     'panelType': {
                         'brand': panel.brand,
-                        'power': float(panel.power),
-                        'price': float(panel.price) #* panels_needed * panel.power
+                        'power': int(panel.power),
+                        'price': int(panel.price) * panels_needed * panel.power
                     },
                     'inverterType': {
                         'brand': inverter.brand,
@@ -222,9 +222,9 @@ class QuoteService(BaseService):
                 if required_cost not in variable_costs:
                     logger.warning(f"Missing cost: {required_cost}, using default")
                     default_values = {
-                        'Net Metering': 50000,
-                        'Installation Cost per Watt': 10,
-                        'Frame Cost per Watt': 8,
+                        'Net Metering': VariableCosts.objects.get(cost_name='Net Metering').cost,
+                        'Installation Cost per Watt': VariableCosts.objects.get(cost_name='Installation Cost per Watt').cost,
+                        'Frame Cost per Watt': VariableCosts.objects.get(cost_name='Frame Cost per Watt').cost,
                         'Labor Cost': 5000
                     }
                     variable_costs[required_cost] = default_values[required_cost]

@@ -3,6 +3,7 @@ import math
 import requests
 from typing import Dict, Any, List
 from django.conf import settings
+from solar.invoice_generator.Bill_Reader import bill_reader
 
 from .base_service import BaseService
 from .bill_parser import get_parser_for_bill
@@ -12,7 +13,6 @@ class BillService(BaseService):
     """Service for handling electricity bill operations."""
 
     BASE_URL = "https://bill.pitc.com.pk/mepcobill"
-    BILL_TYPES = ['general', 'industrial']
 
     # Constants for calculations
     KWH_PER_KW_PER_DAY = 4  # Average daily production per kW in Pakistan
@@ -34,15 +34,14 @@ class BillService(BaseService):
             # Check each bill type
             for bill_type in cls.BILL_TYPES:
                 try:
-                    url = f"{cls.BASE_URL}/{bill_type}?refno={reference_number}"
-                    response = requests.get(url, timeout=10)  # Add timeout
-                    
-                    if response.status_code == 200 and "Bill Not Found" not in response.text:
+                    response = bill_reader(reference_number)
+                    print(f"Response: {response}")
+                    if response.name != "Not found":
                         return cls.format_response({
                             'isValid': True,
                             'referenceNumber': reference_number,
                             'type': bill_type,
-                            'source_url': url
+                            'source_url': "https://bill.pitc.com.pk/mepcobill"
                         })
                 except requests.RequestException as e:
                     print(f"Error checking {bill_type} bill: {str(e)}")
@@ -83,40 +82,47 @@ class BillService(BaseService):
         """
         try:
             # First validate the bill
-            validation = cls.validate_bill(reference_number)
-            if not validation['data']['isValid']:
+            bill = bill_reader(reference_number)
+            if bill.name == "Not found":
                 raise AppError(
                     message='Invalid bill reference',
                     code=ErrorTypes.VALIDATION_ERROR
                 )
+            #validation = cls.validate_bill(reference_number)
+            #if not validation['data']['isValid']:
+            #    raise AppError(
+            #        message='Invalid bill reference',
+            #        code=ErrorTypes.VALIDATION_ERROR
+            #    )
 
             # Fetch bill HTML
-            response = requests.get(validation['data']['source_url'])
-            if response.status_code != 200:
-                raise AppError(
-                    message='Failed to fetch bill',
-                    code=ErrorTypes.SERVICE_ERROR
-                )
+            #response = requests.get(validation['data']['source_url'])
+            #if response.status_code != 200:
+            #    raise AppError(
+            #        message='Failed to fetch bill',
+            #        code=ErrorTypes.SERVICE_ERROR
+            #    )
 
             # Parse bill using appropriate parser
-            parser = get_parser_for_bill(
-                validation['data']['type'],
-                response.text
-            )
-            bill_data = parser.parse_bill()
+            #parser = get_parser_for_bill(
+            #    validation['data']['type'],
+            #    response.text
+            #)
+            #bill_data = parser.parse_bill()
 
-            if not bill_data:
-                raise AppError(
-                    message='Failed to parse bill data',
-                    code=ErrorTypes.SERVICE_ERROR
-                )
+            #if not bill_data:
+            #    raise AppError(
+            #        message='Failed to parse bill data',
+            #        code=ErrorTypes.SERVICE_ERROR
+            #    )
 
             # Calculate system sizing and enhancements
-            yearly_units = int(bill_data['Total Yearly Units'])
+            yearly_units = int(bill['Total Yearly Units'])
+            print(f"Yearly units: {yearly_units}")
             system_sizing = cls.calculate_system_sizing(yearly_units)
 
             return cls.format_response(
-                cls._enhance_bill_data(bill_data, system_sizing)
+                cls._enhance_bill_data(bill, system_sizing)
             )
 
         except AppError:

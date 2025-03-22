@@ -1110,3 +1110,413 @@ Traceback (most recent call last):
     pdf.cell(20, 20, txt=f"{int(float(structure_costs))}", border="L,R,T", ln=1, align="R", fill=True)
                                 ~~~~~^^^^^^^^^^^^^^^^^
 TypeError: float() argument must be a string or a real number, not 'dict'
+ERROR 2025-03-23 02:21:56,263 bill_views 29628 6808 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:25:26,548 bill_views 17352 16768 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:25:58,412 bill_views 8412 2884 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:26:57,757 bill_views 13656 27040 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:27:36,094 bill_views 15388 24896 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:30:10,165 bill_views 2028 23656 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:30:43,225 bill_views 4636 23932 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 16, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:31:52,199 bill_views 13780 27820 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 17, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 3 (char 4)
+ERROR 2025-03-23 02:33:04,967 bill_views 13780 28436 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 5 (char 8)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 17, in post
+    reference_number = request.data.get('reference_number')
+                       ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 5 (char 8)
+ERROR 2025-03-23 02:33:27,794 bill_views 28096 3772 Unexpected error in bill validation
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 66, in parse
+    return json.load(decoded_stream, parse_constant=parse_constant)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 31, in load
+    return json.load(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 5 (char 8)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Projects\Solar_Sizing_Bill_Calculator_With_AI_Backend\solar\views\bill_views.py", line 17, in post
+    print(request.data)
+          ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 220, in data
+    self._load_data_and_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 283, in _load_data_and_files
+    self._data, self._files = self._parse()
+                              ~~~~~~~~~~~^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\request.py", line 358, in _parse
+    parsed = parser.parse(stream, media_type, self.parser_context)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\parsers.py", line 68, in parse
+    raise ParseError('JSON parse error - %s' % str(exc))
+rest_framework.exceptions.ParseError: JSON parse error - Expecting property name enclosed in double quotes: line 2 column 5 (char 8)
