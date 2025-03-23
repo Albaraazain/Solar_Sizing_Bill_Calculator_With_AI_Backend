@@ -25,6 +25,7 @@ class BillService(BaseService):
         """Validate bill reference number and determine bill type."""
         try:
             # First validate the format
+            print("Validating bill format")
             if not reference_number.isdigit():
                 return cls.format_response({
                     'isValid': False,
@@ -32,20 +33,18 @@ class BillService(BaseService):
                 })
 
             # Check each bill type
-            for bill_type in cls.BILL_TYPES:
-                try:
-                    response = bill_reader(reference_number)
-                    print(f"Response: {response}")
-                    if response.name != "Not found":
-                        return cls.format_response({
-                            'isValid': True,
-                            'referenceNumber': reference_number,
-                            'type': bill_type,
-                            'source_url': "https://bill.pitc.com.pk/mepcobill"
-                        })
-                except requests.RequestException as e:
-                    print(f"Error checking {bill_type} bill: {str(e)}")
-                    continue
+            print("Checking bill types")
+            try:
+                response = bill_reader(reference_number)
+                print(f"Response: {response}")
+                if response.get('Name') and response['Name'] != "Not found":
+                    return cls.format_response({
+                        'isValid': True,
+                        'referenceNumber': reference_number,
+                        'source_url': "https://bill.pitc.com.pk/mepcobill"
+                    })
+            except requests.RequestException as e:
+                print(f"Error checking bill: {str(e)}")
 
             # If we get here, bill was not found in any type
             return cls.format_response({
