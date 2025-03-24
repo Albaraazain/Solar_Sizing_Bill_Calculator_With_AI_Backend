@@ -91,23 +91,23 @@ export class BillPreview {
                         </div>
 
                         <!-- Summary -->
-                        <div class="space-y-2 pt-4 border-t border-gray-200">
-                            <div class="flex justify-between text-sm">
+                        <div class="space-y-2 pt-3 sm:pt-4 border-t border-gray-200">
+                            <div class="flex justify-between text-xs sm:text-sm">
                                 <span class="text-gray-600">Subtotal</span>
-                                <span class="text-gray-800">${this.formatCurrency(billData.amount)}</span>
+                                <span class="text-gray-800 font-medium">${this.formatCurrency(billData.amount)}</span>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs sm:text-sm">
                                 <span class="text-gray-600">Tax (${this.formatNumber(billData.taxRate, 1)}%)</span>
-                                <span class="text-gray-800">${this.formatCurrency(billData.taxAmount)}</span>
+                                <span class="text-gray-800 font-medium">${this.formatCurrency(billData.taxAmount)}</span>
                             </div>
-                            <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
+                            <div class="flex justify-between text-sm sm:text-base font-semibold pt-2 border-t border-gray-200">
                                 <span>Total Due</span>
-                                <span>${this.formatCurrency(billData.totalAmount)}</span>
+                                <span class="text-primary">${this.formatCurrency(billData.totalAmount)}</span>
                             </div>
 
                             <!-- Additional Notes -->
-                            <div class="mt-6 pt-4 border-t border-gray-200">
-                                <p class="text-xs text-gray-500">
+                            <div class="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200">
+                                <p class="text-[10px] sm:text-xs text-gray-500 leading-relaxed">
                                     Please ensure payment is made before the due date to avoid any late payment charges.
                                     For questions about this bill, please contact MEPCO customer service.
                                 </p>
