@@ -14,32 +14,32 @@ export class SystemSizing {
 
     render(container) {
         container.innerHTML = `
-            <div id="system-sizing" class="w-full h-full overflow-y-auto px-4 py-6 space-y-4">
-                <h2 class="text-2xl font-bold text-gray-800">Solar System Dashboard</h2>
+            <div id="system-sizing" class="w-full h-full overflow-y-auto px-2 sm:px-4 py-4 sm:py-6 space-y-3 sm:space-y-4">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Solar System Dashboard</h2>
                 
                 <!-- Top Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     ${this.renderSystemSizeCard()}
                     ${this.renderEstimatedCostCard()}
                     ${this.renderPaybackPeriodCard()}
                 </div>
 
                 <!-- Energy Production Section -->
-                <div class="bg-white rounded-lg shadow-sm p-4">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800">Energy Production</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+                    <h3 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-800">Energy Production</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
                         ${this.renderEnergyProductionStat("Daily", "daily-production-value", "kWh")}
                         ${this.renderEnergyProductionStat("Monthly", "monthly-production-value", "kWh")}
                         ${this.renderEnergyProductionStat("Annual", "annual-production-value", "kWh")}
                         ${this.renderEnergyProductionStat("Coverage", "coverage-percentage-value", "%")}
                     </div>
-                    <div class="h-64 md:h-80">
+                    <div class="h-48 sm:h-64 md:h-80">
                         <canvas id="energy-production-chart"></canvas>
                     </div>
                 </div>
 
                 <!-- System Details Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
                     ${this.renderSystemDetailsCards()}
                 </div>
             </div>
@@ -51,15 +51,15 @@ export class SystemSizing {
 
     renderSystemSizeCard() {
         return `
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <h3 class="text-lg font-semibold mb-3 text-gray-800">System Size</h3>
+            <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-gray-800">System Size</h3>
                 <div class="flex items-center justify-between">
-                    <div class="w-16 h-16" id="system-size-progress"></div>
+                    <div class="w-14 h-14 sm:w-16 sm:h-16" id="system-size-progress"></div>
                     <div class="text-right">
-                        <p class="text-2xl font-bold text-gray-900">
+                        <p class="text-xl sm:text-2xl font-bold text-gray-900">
                             <span id="system-size-value">0</span>
                         </p>
-                        <p class="text-sm text-gray-500">kW</p>
+                        <p class="text-xs sm:text-sm text-gray-500">kW</p>
                     </div>
                 </div>
             </div>
@@ -68,16 +68,21 @@ export class SystemSizing {
 
     renderEstimatedCostCard() {
         return `
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <h3 class="text-lg font-semibold mb-3 text-gray-800">Estimated Cost</h3>
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-2xl font-bold text-gray-900">PKR <span id="estimated-cost-value">0</span></p>
-                    <div class="text-sm">
+            <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-gray-800">Estimated Cost</h3>
+                <div class="flex justify-between items-start mb-3 sm:mb-4">
+                    <div class="space-y-1">
+                        <p class="text-xl sm:text-2xl font-bold text-gray-900">
+                            <span class="text-sm sm:text-base font-normal text-gray-600">PKR</span>
+                            <span id="estimated-cost-value">0</span>
+                        </p>
+                    </div>
+                    <div class="text-xs sm:text-sm">
                         <p class="text-gray-600">Before incentives</p>
-                        <p class="text-green-600 font-medium">-PKR ${this.calculateIncentives()} in incentives</p>
+                        <p class="text-green-600 font-medium whitespace-nowrap">-PKR ${this.calculateIncentives()} in incentives</p>
                     </div>
                 </div>
-                <div class="h-32">
+                <div class="h-24 sm:h-32">
                     <canvas id="cost-breakdown-chart"></canvas>
                 </div>
             </div>
@@ -86,16 +91,24 @@ export class SystemSizing {
 
     renderPaybackPeriodCard() {
         return `
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <h3 class="text-lg font-semibold mb-3 text-gray-800">Payback Period</h3>
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-2xl font-bold text-gray-900"><span id="payback-period-value">0</span> years</p>
-                    <div class="text-sm">
+            <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-gray-800">Payback Period</h3>
+                <div class="flex justify-between items-start mb-3 sm:mb-4">
+                    <div class="space-y-1">
+                        <p class="text-xl sm:text-2xl font-bold text-gray-900">
+                            <span id="payback-period-value">0</span>
+                            <span class="text-sm sm:text-base font-normal text-gray-600">years</span>
+                        </p>
+                    </div>
+                    <div class="text-xs sm:text-sm">
                         <p class="text-gray-600">Annual Savings</p>
-                        <p class="text-green-600 font-medium">PKR <span id="annual-savings-value">0</span></p>
+                        <p class="text-green-600 font-medium whitespace-nowrap">
+                            <span class="text-xs sm:text-sm">PKR</span>
+                            <span id="annual-savings-value">0</span>
+                        </p>
                     </div>
                 </div>
-                <div class="h-32">
+                <div class="h-24 sm:h-32">
                     <canvas id="payback-period-chart"></canvas>
                 </div>
             </div>
@@ -104,10 +117,10 @@ export class SystemSizing {
 
     renderEnergyProductionStat(label, id, unit) {
         return `
-            <div class="bg-gray-50 rounded p-3">
-                <p class="text-sm text-gray-600">${label}</p>
-                <p class="text-lg font-semibold text-gray-900">
-                    <span id="${id}">0</span> ${unit}
+            <div class="bg-gray-50 rounded p-2 sm:p-3">
+                <p class="text-xs sm:text-sm text-gray-600">${label}</p>
+                <p class="text-base sm:text-lg font-semibold text-gray-900">
+                    <span id="${id}">0</span> <span class="text-sm sm:text-base">${unit}</span>
                 </p>
             </div>
         `;
@@ -128,13 +141,16 @@ export class SystemSizing {
 
     renderDetailCard({ title, id, unit, icon, value }) {
         return `
-            <div class="bg-white rounded-lg p-3 shadow-sm">
-                <div class="flex items-start gap-3">
-                    ${this.getIcon(icon)}
+            <div class="bg-white rounded-lg p-2 sm:p-3 shadow-sm">
+                <div class="flex items-start gap-2 sm:gap-3">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10">
+                        ${this.getIcon(icon)}
+                    </div>
                     <div>
-                        <p class="text-sm text-gray-600">${title}</p>
-                        <p class="text-lg font-semibold text-gray-900">
-                            <span id="${id}">${value || '0'}</span> ${unit}
+                        <p class="text-xs sm:text-sm text-gray-600">${title}</p>
+                        <p class="text-sm sm:text-lg font-semibold text-gray-900">
+                            <span id="${id}">${value || '0'}</span>
+                            <span class="text-xs sm:text-base">${unit}</span>
                         </p>
                     </div>
                 </div>
@@ -319,18 +335,53 @@ export class SystemSizing {
     // Utility methods
     getChartOptions(type = 'default') {
         const isMobile = window.innerWidth < 768;
+        const isSmall = window.innerWidth < 640;
 
         const baseOptions = {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: isMobile ? 'nearest' : 'index',
+                intersect: false,
+                axis: 'x'
+            },
             plugins: {
                 legend: {
-                    position: 'bottom',
+                    position: isSmall ? 'bottom' : 'top',
                     labels: {
-                        boxWidth: 12,
-                        padding: 15,
+                        boxWidth: isSmall ? 8 : 12,
+                        padding: isSmall ? 10 : 15,
                         font: {
-                            size: isMobile ? 10 : 12
+                            size: isSmall ? 9 : (isMobile ? 10 : 12)
+                        }
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    mode: 'index',
+                    intersect: false,
+                    padding: isSmall ? 6 : 8,
+                    bodyFont: {
+                        size: isSmall ? 10 : 12
+                    },
+                    titleFont: {
+                        size: isSmall ? 10 : 12
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        font: {
+                            size: isSmall ? 8 : (isMobile ? 10 : 12)
+                        },
+                        maxRotation: isSmall ? 45 : 0
+                    }
+                },
+                y: {
+                    ticks: {
+                        font: {
+                            size: isSmall ? 8 : (isMobile ? 10 : 12)
                         }
                     }
                 }
@@ -341,8 +392,11 @@ export class SystemSizing {
             return {
                 ...baseOptions,
                 scales: {
+                    ...baseOptions.scales,
                     y: {
+                        ...baseOptions.scales.y,
                         ticks: {
+                            ...baseOptions.scales.y.ticks,
                             callback: value => `PKR ${value.toLocaleString()}`
                         }
                     }
