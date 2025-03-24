@@ -34,18 +34,18 @@ export class BillPreview {
         const billData = this.billData;
 
         container.innerHTML = `
-            <div class="flex h-full w-full items-center justify-center p-4">
-                <div class="w-full max-w-4xl min-h-[900px] bg-white rounded-lg shadow-md p-6 flex flex-col">
+            <div class="flex h-full w-full items-center justify-center p-2 sm:p-4">
+                <div class="w-full max-w-4xl min-h-[900px] bg-white rounded-lg shadow-md p-3 sm:p-6 flex flex-col">
                     <!-- Header -->
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="text-2xl font-bold text-gray-800">MEPCO</div>
-                        <div class="text-sm text-gray-600">Bill #${billData.referenceNumber}</div>
+                    <div class="flex justify-between items-center mb-3 sm:mb-4">
+                        <div class="text-xl sm:text-2xl font-bold text-gray-800">MEPCO</div>
+                        <div class="text-xs sm:text-sm text-gray-600">Bill #${billData.referenceNumber}</div>
                     </div>
                     
                     <!-- Bill Details -->
-                    <div class="space-y-6">
+                    <div class="space-y-4 sm:space-y-6">
                         <!-- Customer Info -->
-                        <div class="grid grid-cols-2 gap-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                             <div>
                                 <h3 class="text-sm font-semibold uppercase text-gray-700 mb-1">Bill To</h3>
                                 <p class="text-sm text-gray-600">${billData.customerName}</p>
@@ -61,31 +61,33 @@ export class BillPreview {
                         </div>
 
                         <!-- Dates -->
-                        <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                             <p class="text-gray-600"><span class="font-medium">Issue Date:</span> ${billData.issueDate}</p>
                             <p class="text-gray-600"><span class="font-medium">Due Date:</span> ${billData.dueDate}</p>
                         </div>
 
                         <!-- Bill Table -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        <th class="py-3 px-4">Description</th>
-                                        <th class="py-3 px-4">Units</th>
-                                        <th class="py-3 px-4">Rate</th>
-                                        <th class="py-3 px-4">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    <tr class="text-sm text-gray-600">
-                                        <td class="py-4 px-4">Electricity Consumption</td>
-                                        <td class="py-4 px-4">${this.formatNumber(billData.unitsConsumed)}</td>
-                                        <td class="py-4 px-4">${this.formatNumber(billData.ratePerUnit, 2)}</td>
-                                        <td class="py-4 px-4">${this.formatCurrency(billData.amount)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="overflow-x-auto -mx-3 sm:mx-0">
+                            <div class="inline-block min-w-full align-middle">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th class="py-2 sm:py-3 px-2 sm:px-4">Description</th>
+                                            <th class="py-2 sm:py-3 px-2 sm:px-4">Units</th>
+                                            <th class="py-2 sm:py-3 px-2 sm:px-4">Rate</th>
+                                            <th class="py-2 sm:py-3 px-2 sm:px-4">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr class="text-xs sm:text-sm text-gray-600">
+                                            <td class="py-3 sm:py-4 px-2 sm:px-4">Electricity Consumption</td>
+                                            <td class="py-3 sm:py-4 px-2 sm:px-4">${this.formatNumber(billData.unitsConsumed)}</td>
+                                            <td class="py-3 sm:py-4 px-2 sm:px-4">${this.formatNumber(billData.ratePerUnit, 2)}</td>
+                                            <td class="py-3 sm:py-4 px-2 sm:px-4">${this.formatCurrency(billData.amount)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Summary -->
