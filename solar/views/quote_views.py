@@ -48,28 +48,60 @@ class QuoteGenerateAPIView(APIView):
             customer_name = quote_data['data']['systemDetails']['customer_name']
             customer_address = 'Not specified'
             customer_phone = '034512152266'
-            system_size = quote_data['data']['systemDetails']['systemSize']
-            panels = quote_data['data']['systemDetails']['panelCount']
-            panel_power = quote_data['data']['systemDetails']['panelType']['power']
-            inverter_price = quote_data['data']['systemDetails']['inverterType']['price']
+            # Extract values and convert to float to ensure consistent type handling
+            system_size = float(quote_data['data']['systemDetails']['systemSize'])
+            panels = int(quote_data['data']['systemDetails']['panelCount'])
+            panel_power = float(quote_data['data']['systemDetails']['panelType']['power'])
+            inverter_price = float(quote_data['data']['systemDetails']['inverterType']['price'])
             inverter_brand = quote_data['data']['systemDetails']['inverterType']['brand']
-            panel_price = quote_data['data']['systemDetails']['panelType']['price'] * panel_power * panels
-            net_metering = quote_data['data']['costs']['details']['net_metering']['amount']
-            installation_costs = quote_data['data']['costs']['details']['installation']['amount']
-            dc_cable = quote_data['data']['costs']['details']['dc_cable']['amount']
-            ac_cable = quote_data['data']['costs']['details']['ac_cable']['amount']
-            cabling_costs = dc_cable + ac_cable
-            frame_costs = quote_data['data']['costs']['details']['frame']['amount']
-            electrical_and_mechanical_costs = 50000
-            total_cost = installation_costs + cabling_costs + frame_costs + electrical_and_mechanical_costs + panel_price + inverter_price + net_metering
-            print(customer_name)
-            print("Making invoice...")
-            generate_invoice(system_size, panels, panel_power, inverter_price,
-                     inverter_brand, panel_price, net_metering,
-                     installation_costs, cabling_costs, frame_costs,
-                     electrical_and_mechanical_costs, total_cost, customer_name, customer_address, customer_phone)
-            print("Invoice made and sent")
-            return Response(quote_data)
+            panel_price = float(quote_data['data']['systemDetails']['panelType']['price']) * panel_power * panels
+            net_metering = float(quote_data['data']['costs']['details']['net_metering']['amount'])
+            installation_costs = float(quote_data['data']['costs']['details']['installation']['amount'])
+            dc_cable = float(quote_data['data']['costs']['details']['dc_cable']['amount'])
+            ac_cable = float(quote_data['data']['costs']['details']['ac_cable']['amount'])
+            cabling_costs = float(dc_cable + ac_cable)
+            frame_costs = float(quote_data['data']['costs']['details']['frame']['amount'])
+            electrical_and_mechanical_costs = float(50000)
+            total_cost = float(installation_costs + cabling_costs + frame_costs + electrical_and_mechanical_costs + panel_price + inverter_price + net_metering)
+            
+            # Log values for debugging
+            logger.info(f"Extracted quote values:")
+            logger.info(f"System size: {system_size}")
+            logger.info(f"Panel cost calculation: {panel_price} = {quote_data['data']['systemDetails']['panelType']['price']} * {panel_power} * {panels}")
+            logger.info(f"Total cost components: installation={installation_costs}, cabling={cabling_costs}, frame={frame_costs}, e&m={electrical_and_mechanical_costs}, panel={panel_price}, inverter={inverter_price}, net metering={net_metering}")
+            logger.info(f"Total cost: {total_cost}")
+            logger.info(f"Starting invoice generation for customer: {customer_name}")
+            try:
+                # Ensure all parameters are properly formatted
+                generate_invoice(
+                    system_size=float(system_size),
+                    panel_amount=int(panels),
+                    panel_power=float(panel_power),
+                    price_of_inverter=float(inverter_price),
+                    brand_of_inverter=str(inverter_brand),
+                    price_of_panels=float(panel_price),
+                    netmetering_costs=float(net_metering),
+                    installation_costs=float(installation_costs),
+                    cabling_costs=float(cabling_costs),
+                    structure_costs=float(frame_costs),
+                    electrical_and_mechanical_costs=float(electrical_and_mechanical_costs),
+                    total_cost=float(total_cost),
+                    customer_name=str(customer_name),
+                    customer_address=str(customer_address),
+                    customer_contact=str(customer_phone)
+                )
+                logger.info("Invoice generated and sent successfully")
+                return Response(quote_data)
+            except Exception as e:
+                logger.error(f"Failed to generate invoice: {str(e)}")
+                return Response({
+                    'success': False,
+                    'error': {
+                        'message': 'Failed to generate invoice',
+                        'code': 'INVOICE_GENERATION_ERROR',
+                        'details': str(e)
+                    }
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except Exception as e:
             logger.exception("Error in quote generation")
