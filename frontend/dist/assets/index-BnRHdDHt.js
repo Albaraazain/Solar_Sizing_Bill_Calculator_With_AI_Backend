@@ -987,7 +987,7 @@ var th=Object.defineProperty;var eh=(s,t,e)=>t in s?th(s,t,{enumerable:!0,config
                 </div>
             </div>
         `}renderPerformanceStats(){const{peakHours:t,performanceRatio:e}=this.quoteData.production;return`
-            <div class="bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-lg p-4 shadow-sm text-white">
+            <div class="bg-gradient-to-br from-teal-700 to-teal-500 rounded-lg p-4 shadow-sm text-white">
                 <h3 class="text-base sm:text-lg font-semibold mb-3">Performance Stats</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1013,7 +1013,7 @@ var th=Object.defineProperty;var eh=(s,t,e)=>t in s?th(s,t,{enumerable:!0,config
                 </div>
             </div>
         `}renderFinancialStats(){return`
-            <div class="bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg p-4 shadow-sm text-white">
+            <div class="bg-gradient-to-br from-cyan-700 to-cyan-500 rounded-lg p-4 shadow-sm text-white">
                 <h3 class="text-base sm:text-lg font-semibold mb-3">Financial Overview</h3>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
@@ -1138,7 +1138,7 @@ var th=Object.defineProperty;var eh=(s,t,e)=>t in s?th(s,t,{enumerable:!0,config
                 </div>
             </div>
         `}renderCostAnalysis(){const{costs:t}=this.quoteData;return`
-            <div class="bg-gradient-to-br from-indigo-700 to-indigo-500 rounded-lg p-4 shadow-sm text-white">
+            <div class="bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg p-4 shadow-sm text-white">
                 <h3 class="text-base sm:text-lg font-semibold mb-3">Cost Breakdown</h3>
                 <div class="space-y-4">
                     <div>
