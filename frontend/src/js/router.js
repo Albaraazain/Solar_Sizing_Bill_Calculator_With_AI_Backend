@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { ReferenceInputPage } from "./components/ReferenceInputPage/ReferenceInputPage.js";
 import { BillReviewPage } from "./components/BillReview/BillReviewPage.js";
 import { QuoteResultPage } from "./components/QuoteResultPage.js";
+import { LoadersShowcase } from "./components/Loaders/LoadersShowcase.js";
 import { loadingManager } from "../core/loading/LoadingManager.js";
 import { LoadingUI } from "../core/loading/LoadingUI.js";
 
@@ -28,6 +29,13 @@ export class Router {
                 path: "/quote",
                 component: () => {
                     const page = new QuoteResultPage();
+                    page.render();
+                }
+            },
+            {
+                path: "/loaders",
+                component: () => {
+                    const page = new LoadersShowcase();
                     page.render();
                 }
             }
@@ -109,14 +117,7 @@ export class Router {
     }
 
     getLoadingTemplate() {
-        return `
-            <div class="flex items-center justify-center min-h-screen">
-                <div class="text-center">
-                    ${LoadingUI.createSpinner('lg', 'primary').outerHTML}
-                    <p class="mt-4 text-gray-600">Loading...</p>
-                </div>
-            </div>
-        `;
+        return LoadingUI.createPageLoadingTemplate('Loading...', 'bg-white');
     }
 
     fadeOut(element) {
