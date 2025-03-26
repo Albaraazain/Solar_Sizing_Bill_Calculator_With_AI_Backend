@@ -4,6 +4,7 @@ import Chart from "chart.js/auto";
 import { CountUp } from "countup.js";
 import { Api } from "/src/api/index.js";
 import { LoadingUI } from "/src/core/loading/LoadingUI.js";
+import { SolarLoadingOverlay } from "/src/js/components/Loaders/SolarLoader.js";
 
 export class QuoteResultPage {
     constructor() {
@@ -163,10 +164,9 @@ export class QuoteResultPage {
         
         try {
             this.isPdfGenerating = true;
-            LoadingUI.showGlobalLoading('Generating your PDF report...', {
-                spinnerSize: 'lg',
-                spinnerColor: 'primary'
-            });
+            
+            // Use the solar loading overlay's show method
+            SolarLoadingOverlay.show('Generating your PDF report...');
             
             // Get customer info - in a real app, you might want to prompt for this
             const customerInfo = {
@@ -178,7 +178,8 @@ export class QuoteResultPage {
             // Call the API to generate the PDF
             const response = await Api.quote.generatePDF(this.quoteData, customerInfo);
             
-            LoadingUI.hideGlobalLoading();
+            // Hide the overlay
+            SolarLoadingOverlay.hide();
             this.isPdfGenerating = false;
             
             if (response?.success && response?.data) {
@@ -187,7 +188,9 @@ export class QuoteResultPage {
                 throw new Error(response?.error?.message || 'Failed to generate PDF');
             }
         } catch (error) {
-            LoadingUI.hideGlobalLoading();
+            // Hide the overlay
+            SolarLoadingOverlay.hide();
+            
             this.isPdfGenerating = false;
             console.error('Error generating PDF:', error);
             window.toasts?.show(error.message || 'Failed to generate PDF report', 'error');
