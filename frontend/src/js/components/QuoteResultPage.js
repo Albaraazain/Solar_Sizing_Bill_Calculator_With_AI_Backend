@@ -23,7 +23,6 @@ export class QuoteResultPage {
                 throw new Error('No reference number available');
             }
 
-
             // Get bill details first
             const response = await Api.bill.getBillDetails(referenceNumber);
             console.log('Bill response:', response);
@@ -451,7 +450,26 @@ export class QuoteResultPage {
                     }
                 ]
             },
-            options: this.getChartOptions()
+            options: {
+                ...this.getChartOptions(),
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => `${value} kWh`
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.y} kWh`;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 
@@ -484,7 +502,27 @@ export class QuoteResultPage {
                     }
                 ]
             },
-            options: this.getChartOptions('currency')
+            options: {
+                ...this.getChartOptions(),
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => `PKR ${Math.round(value).toLocaleString()}`
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = Math.round(context.parsed.y).toLocaleString();
+                                return `${context.dataset.label}: PKR ${value}`;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 
