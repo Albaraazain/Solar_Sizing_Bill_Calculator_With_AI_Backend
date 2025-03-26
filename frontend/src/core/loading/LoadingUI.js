@@ -1,4 +1,5 @@
 // src/core/loading/LoadingUI.js
+import { SolarLoader, SolarLoadingOverlay } from "../../js/components/Loaders/SolarLoader.js";
 
 export class LoadingUI {
     constructor() {
@@ -28,6 +29,17 @@ export class LoadingUI {
         const spinner = document.createElement('div');
         spinner.className = `${sizes[size]} loading-spinner ${colors[color]}`;
         return spinner;
+    }
+
+    /**
+     * Create a solar themed loader (uses the SolarLoader component)
+     * @param {string} size - Size of the loader ('sm', 'md', 'lg', 'xl')
+     * @param {string} message - Optional message to display
+     * @param {boolean} showDots - Whether to show animated dots after the message
+     * @returns {HTMLElement}
+     */
+    static createSolarLoader(size = 'md', message = 'Calculating', showDots = true) {
+        return SolarLoader.create({ size, message, showDots });
     }
 
     /**
@@ -69,6 +81,16 @@ export class LoadingUI {
      * @returns {HTMLElement}
      */
     static createLoadingOverlay(message = 'Loading...', options = {}) {
+        // Use solar-themed overlay for solar-related messages
+        if (options.useSolar || 
+            message.toLowerCase().includes('solar') || 
+            message.toLowerCase().includes('energy') || 
+            message.toLowerCase().includes('system') ||
+            message.toLowerCase().includes('calculating')) {
+            return SolarLoadingOverlay.create({ message });
+        }
+        
+        // Otherwise use standard overlay
         const overlay = document.createElement('div');
         overlay.className = 'loading-overlay';
         
@@ -138,6 +160,27 @@ export class LoadingUI {
      * @returns {string} HTML template
      */
     static createPageLoadingTemplate(message = 'Loading...', bgColor = 'bg-white') {
+        // Use solar-themed loader for solar-related pages
+        if (message.toLowerCase().includes('solar') || 
+            message.toLowerCase().includes('energy') || 
+            message.toLowerCase().includes('quote') || 
+            message.toLowerCase().includes('system') ||
+            message.toLowerCase().includes('calculating')) {
+            
+            return `
+                <div class="page-loading-container h-screen w-full flex items-center justify-center ${bgColor}">
+                    <div class="loading-card">
+                        ${SolarLoader.create({ size: 'lg', message: null }).outerHTML}
+                        <p class="loading-text">${message}</p>
+                        <div class="loading-progress-bar">
+                            <div class="loading-progress-value"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Standard loading template
         return `
             <div class="page-loading-container h-screen w-full flex items-center justify-center ${bgColor}">
                 <div class="loading-card">
