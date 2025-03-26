@@ -6,6 +6,8 @@ import { QuoteResultPage } from "./components/QuoteResultPage.js";
 import { LoadersShowcase } from "./components/Loaders/LoadersShowcase.js";
 import { loadingManager } from "../core/loading/LoadingManager.js";
 import { LoadingUI } from "../core/loading/LoadingUI.js";
+import { LoaderShowcaseVanilla } from "./pages/LoaderShowcaseVanilla.js";
+import { SolarLoaderDemo } from "./pages/SolarLoaderDemo.js";
 
 export class Router {
     constructor() {
@@ -36,6 +38,20 @@ export class Router {
                 path: "/loaders",
                 component: () => {
                     const page = new LoadersShowcase();
+                    page.render();
+                }
+            },
+            {
+                path: "/solar-loaders",
+                component: () => {
+                    const page = new LoaderShowcaseVanilla();
+                    page.render();
+                }
+            },
+            {
+                path: "/solar-loader-test",
+                component: () => {
+                    const page = new SolarLoaderDemo();
                     page.render();
                 }
             }
