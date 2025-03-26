@@ -1,7 +1,6 @@
 // src/js/components/BillReview/BillReviewPage.js
 import { Api } from "/src/api/index.js";
 import { BillPreview } from "../BillPreview.js";
-import { API_CONFIG } from '/src/api/client/apiConfig';
 import { gsap } from "gsap";
 import Chart from "chart.js/auto";
 import { CountUp } from 'countup.js';
@@ -22,43 +21,40 @@ export class BillReviewPage {
     }
 
     async initialize() {
-        const loadingKey = 'bill_review_init';
         try {
-            if (!this.referenceNumber) {
-                throw new Error('No reference number available');
+            const referenceNumber = sessionStorage.getItem('currentReferenceNumber');
+            if (!referenceNumber) {
+                window.router.push('/reference-input');
+                return false;
             }
 
-            loadingManager.startLoading(loadingKey, {
-                message: 'Loading bill details...',
-                type: 'component'
-            });
+            // Load bill data
+            const response = await Api.bill.getBillDetails(referenceNumber);
+            console.log("Bill details:", response);
 
-            const response = await Api.bill.getBillDetails(this.referenceNumber);
-            if (!response || !response.data) {
-                throw new Error('No bill data available');
+            if (!response.success || !response.data) {
+                throw new Error("Failed to load bill details");
             }
 
-            this.billData = response.data;
+            this.billData = {
+                ...response.data,
+                systemSize: response.data.estimatedSystemSize || 5,
+                dueDays: this.calculateDueDays(response.data),
+                billProgress: this.calculateBillProgress(response.data),
+                efficiency: this.calculateEfficiency(response.data)
+            };
+
             return true;
         } catch (error) {
-            console.error('Failed to initialize BillReview:', error);
-            window.toasts?.show('Failed to load bill data', 'error');
-            window.router.push('/');
+            console.error("Failed to initialize BillReviewPage:", error);
+            window.toasts?.show(error.message || "Failed to load bill details", "error");
+            window.router.push('/reference-input');
             return false;
-        } finally {
-            loadingManager.stopLoading(loadingKey);
         }
     }
 
     getLoadingTemplate() {
-        return `
-            <div class="h-screen w-full flex items-center justify-center bg-white">
-                <div class="text-center">
-                    ${LoadingUI.createSpinner('lg', 'primary').outerHTML}
-                    <p class="mt-4 text-emerald-600 font-medium">Loading bill data...</p>
-                </div>
-            </div>
-        `;
+        return LoadingUI.createPageLoadingTemplate('Loading bill data...', 'bg-white');
     }
 
     async render() {
@@ -671,25 +667,36 @@ export class BillReviewPage {
         }
     }
 
-    calculateDueDays() {
-        if (!this.billData.dueDate) return 0;
-        const dueDate = new Date(this.billData.dueDate);
+    calculateDueDays(data) {
+        // Use passed data parameter if available, otherwise use this.billData
+        const billData = data || this.billData;
+        if (!billData || !billData.dueDate) return 0;
+        
+        const dueDate = new Date(billData.dueDate);
         const today = new Date();
         const diffTime = Math.abs(dueDate - today);
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    calculateBillProgress() {
+    calculateBillProgress(data) {
+        // Use passed data parameter if available, otherwise use this.billData
+        const billData = data || this.billData;
+        if (!billData) return 0;
+        
         const daysInMonth = 30;
         const today = new Date();
-        const billDate = new Date(this.billData.issueDate || today);
+        const billDate = new Date(billData.issueDate || today);
         const daysPassed = Math.ceil((today - billDate) / (1000 * 60 * 60 * 24));
         return Math.min((daysPassed / daysInMonth) * 100, 100);
     }
 
-    calculateEfficiency() {
+    calculateEfficiency(data) {
+        // Use passed data parameter if available, otherwise use this.billData
+        const billData = data || this.billData;
+        if (!billData) return "Medium";
+        
         const avgConsumption = 500;
-        return this.billData.unitsConsumed <= avgConsumption ? "High" : "Low";
+        return billData.unitsConsumed <= avgConsumption ? "High" : "Low";
     }
 
     formatCurrency(value) {
@@ -743,17 +750,6 @@ export class BillReviewPage {
             .hide-scrollbar {
                 -ms-overflow-style: none;
                 scrollbar-width: none;
-            }
-            .loading-spinner {
-                width: 40px;
-                height: 40px;
-                border: 3px solid rgba(16, 185, 129, 0.1);
-                border-radius: 50%;
-                border-top-color: #10b981;
-                animation: spin 1s ease-in-out infinite;
-            }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
             }
             .drag-handle {
                 cursor: grab;
