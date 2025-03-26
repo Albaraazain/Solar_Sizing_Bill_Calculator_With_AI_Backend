@@ -38,6 +38,32 @@ export class QuoteApi extends BaseApiService {
             throw error;
         }
     }
+    
+    async generatePDF(quoteData, customerInfo = {}) {
+        try {
+            console.log('Generating PDF for quote:', quoteData);
+            
+            const payload = {
+                quote_data: quoteData,
+                customer_info: customerInfo
+            };
+            
+            const response = await this.post(
+                API_CONFIG.ENDPOINTS.QUOTE.GENERATE_PDF,
+                payload
+            );
+            
+            return response;
+        } catch (error) {
+            console.error('Error generating PDF:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            throw error;
+        }
+    }
+    
     async getQuoteById(quoteId) {
         try {
             const url = `${API_CONFIG.ENDPOINTS.QUOTE.GET}${quoteId}/`;

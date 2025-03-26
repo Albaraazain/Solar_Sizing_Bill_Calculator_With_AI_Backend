@@ -31,6 +31,7 @@ urlpatterns = [
     path('quote/generate/', quote_views.QuoteGenerateAPIView.as_view(), name='quote-generate'),
     path('quote/details/<str:quote_id>/', quote_views.QuoteDetailsAPIView.as_view(), name='quote-details'),
     path('quote/save/', quote_views.QuoteSaveAPIView.as_view(), name='quote-save'),
+    path('quote/generate-pdf/', quote_views.QuoteGeneratePDFAPIView.as_view(), name='quote-generate-pdf'),
 
     # Customer endpoints
     path('customers/', customer_views.CustomerListAPIView.as_view(), name='customer-list'),

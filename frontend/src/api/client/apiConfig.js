@@ -14,7 +14,8 @@ export const API_CONFIG = {
             BASE: '/quote',
             GENERATE: '/generate/',
             GET: '/details/',
-            SAVE: '/save/'
+            SAVE: '/save/',
+            GENERATE_PDF: '/generate-pdf/'
         },
         AUTH: {
             LOGIN: '/auth/login/',              // Added auth endpoints

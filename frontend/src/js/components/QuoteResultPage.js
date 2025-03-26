@@ -10,6 +10,7 @@ export class QuoteResultPage {
         this.progressBars = {};
         this.countUps = {};
         this.quoteData = null;
+        this.isPdfGenerating = false;
     }
 
 async initialize() {
@@ -68,15 +69,26 @@ async initialize() {
                             <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Solar System Quote</h1>
                             <p class="text-xs sm:text-sm lg:text-base text-gray-500">Based on your consumption analysis</p>
                         </div>
-                        <button 
-                            onclick="window.router.push('/bill-review')"
-                            class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors text-xs sm:text-sm lg:text-base"
-                        >
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Back
-                        </button>
+                        <div class="flex gap-2 sm:gap-3">
+                            <button 
+                                id="generatePdfBtn"
+                                class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 rounded-lg bg-green-600 text-white border border-green-700 shadow-sm hover:bg-green-700 transition-colors text-xs sm:text-sm lg:text-base"
+                            >
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Generate PDF Report
+                            </button>
+                            <button 
+                                onclick="window.router.push('/bill-review')"
+                                class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors text-xs sm:text-sm lg:text-base"
+                            >
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Main Content Area -->
@@ -125,12 +137,74 @@ async initialize() {
                     </div>
                 </div>
             </div>
+            
+            <!-- PDF Generation Loading Modal -->
+            <div id="pdfLoadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mb-4"></div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Generating your PDF report</h3>
+                        <p class="text-gray-600 mb-4">This may take a moment. Please wait...</p>
+                    </div>
+                </div>
+            </div>
         `;
 
         this.attachStyles();
         this.initializeComponents();
+        this.setupEventListeners();
     }
-
+    
+    setupEventListeners() {
+        const generatePdfBtn = document.getElementById('generatePdfBtn');
+        if (generatePdfBtn) {
+            generatePdfBtn.addEventListener('click', this.handleGeneratePdf.bind(this));
+        }
+    }
+    
+    async handleGeneratePdf() {
+        if (this.isPdfGenerating || !this.quoteData) return;
+        
+        try {
+            this.isPdfGenerating = true;
+            this.showPdfLoadingModal(true);
+            
+            // Get customer info - in a real app, you might want to prompt for this
+            const customerInfo = {
+                name: this.quoteData.systemDetails.customer_name || 'Customer',
+                address: 'Not specified',
+                phone: '034512152266'
+            };
+            
+            // Call the API to generate the PDF
+            const response = await Api.quote.generatePDF(this.quoteData, customerInfo);
+            
+            this.showPdfLoadingModal(false);
+            this.isPdfGenerating = false;
+            
+            if (response?.success && response?.data) {
+                window.toasts?.show('PDF report generated and sent successfully!', 'success');
+            } else {
+                throw new Error(response?.error?.message || 'Failed to generate PDF');
+            }
+        } catch (error) {
+            this.showPdfLoadingModal(false);
+            this.isPdfGenerating = false;
+            console.error('Error generating PDF:', error);
+            window.toasts?.show(error.message || 'Failed to generate PDF report', 'error');
+        }
+    }
+    
+    showPdfLoadingModal(show) {
+        const modal = document.getElementById('pdfLoadingModal');
+        if (!modal) return;
+        
+        if (show) {
+            modal.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
 
     renderSystemSizeCard() {
         return `
