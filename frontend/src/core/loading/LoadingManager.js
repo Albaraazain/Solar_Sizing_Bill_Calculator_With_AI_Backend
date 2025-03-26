@@ -1,5 +1,6 @@
 // src/core/loading/LoadingManager.js
 import { eventBus } from '../events/EventBus.js';
+import { SolarLoadingOverlay } from '../../js/components/Loaders/SolarLoader.js';
 
 export class LoadingManager {
     constructor() {
@@ -97,17 +98,33 @@ export class LoadingManager {
      * @param {string} options.message - Loading message to display
      * @param {boolean} options.isGlobal - Whether this is a global loading state
      * @param {string} options.type - Type of loading ('page', 'component', 'action')
+     * @param {boolean} options.useSolar - Whether to use the solar-themed loading UI
      */
-    async startLoading(key, { message = '', isGlobal = false, type = 'component' } = {}) {
+    async startLoading(key, { message = '', isGlobal = false, type = 'component', useSolar = false } = {}) {
         try {
+            // Check if the message is related to solar
+            const isSolarRelated = 
+                useSolar || 
+                message.toLowerCase().includes('solar') || 
+                message.toLowerCase().includes('energy') || 
+                message.toLowerCase().includes('system') ||
+                message.toLowerCase().includes('calculating');
+            
             this.loadingStates.set(key, {
                 message,
                 type,
-                startTime: Date.now()
+                startTime: Date.now(),
+                useSolar: useSolar || isSolarRelated
             });
 
             if (isGlobal) {
                 this.globalLoading = true;
+                
+                // Use solar loading overlay for solar-related messages
+                if (isSolarRelated) {
+                    this.loadingStates.get(key).overlayElement = SolarLoadingOverlay.show(message);
+                }
+                
                 await this._emitGlobalChange();
             }
 
@@ -118,7 +135,8 @@ export class LoadingManager {
             this.loadingStates.set(key, {
                 message,
                 type,
-                startTime: Date.now()
+                startTime: Date.now(),
+                useSolar: useSolar || message.toLowerCase().includes('solar')
             });
         }
     }
@@ -131,6 +149,15 @@ export class LoadingManager {
         try {
             const state = this.loadingStates.get(key);
             if (state) {
+                // If this state has a dedicated overlay element, remove it
+                if (state.overlayElement) {
+                    if (state.useSolar) {
+                        SolarLoadingOverlay.hide(state.overlayElement);
+                    } else if (state.overlayElement.parentNode) {
+                        state.overlayElement.parentNode.removeChild(state.overlayElement);
+                    }
+                }
+
                 this.loadingStates.delete(key);
                 
                 // Check if we need to update global loading state
