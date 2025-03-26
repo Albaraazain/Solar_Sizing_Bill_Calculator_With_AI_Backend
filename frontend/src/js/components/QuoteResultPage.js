@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import Chart from "chart.js/auto";
 import { CountUp } from "countup.js";
 import { Api } from "/src/api/index.js";
+import { LoadingUI } from "/src/core/loading/LoadingUI.js";
 
 export class QuoteResultPage {
     constructor() {
@@ -13,53 +14,59 @@ export class QuoteResultPage {
         this.isPdfGenerating = false;
     }
 
-async initialize() {
-    try {
-        // Get reference number from session storage
-        const referenceNumber = sessionStorage.getItem('currentReferenceNumber');
-        if (!referenceNumber) {
-            throw new Error('No reference number available');
+    async initialize() {
+        try {
+            // Get reference number from session storage
+            const referenceNumber = sessionStorage.getItem('currentReferenceNumber');
+            if (!referenceNumber) {
+                throw new Error('No reference number available');
+            }
+
+
+            // Get bill details first
+            const response = await Api.bill.getBillDetails(referenceNumber);
+            console.log('Bill response:', response);
+
+            if (!response?.success || !response?.data) {
+                throw new Error('Invalid bill response structure');
+            }
+
+            // Ensure reference number is included in the data
+            const billData = {
+                ...response.data,
+                reference_number: referenceNumber  // Explicitly include the reference number
+            };
+
+            // Generate quote using bill data
+            const quoteResponse = await Api.quote.generateQuote(billData);
+            console.log('Quote response:', quoteResponse);
+
+            if (!quoteResponse?.success || !quoteResponse?.data) {
+                throw new Error('Failed to generate quote');
+            }
+
+            this.quoteData = quoteResponse.data;
+            return true;
+
+        } catch (error) {
+            console.error('Failed to initialize QuoteResultPage:', error);
+            window.toasts?.show(error.message || 'Failed to generate quote', 'error');
+            window.router.push('/bill-review');
+            return false;
         }
-
-
-        // Get bill details first
-        const response = await Api.bill.getBillDetails(referenceNumber);
-        console.log('Bill response:', response);
-
-        if (!response?.success || !response?.data) {
-            throw new Error('Invalid bill response structure');
-        }
-
-        // Ensure reference number is included in the data
-        const billData = {
-            ...response.data,
-            reference_number: referenceNumber  // Explicitly include the reference number
-        };
-
-        // Generate quote using bill data
-        const quoteResponse = await Api.quote.generateQuote(billData);
-        console.log('Quote response:', quoteResponse);
-
-        if (!quoteResponse?.success || !quoteResponse?.data) {
-            throw new Error('Failed to generate quote');
-        }
-
-        this.quoteData = quoteResponse.data;
-        return true;
-
-    } catch (error) {
-        console.error('Failed to initialize QuoteResultPage:', error);
-        window.toasts?.show(error.message || 'Failed to generate quote', 'error');
-        window.router.push('/bill-review');
-        return false;
     }
-}
+
+    getLoadingTemplate() {
+        return LoadingUI.createPageLoadingTemplate('Generating your quote...', 'bg-gray-50');
+    }
 
     async render() {
+        const app = document.getElementById("app");
+        app.innerHTML = this.getLoadingTemplate();
+        
         const initialized = await this.initialize();
         if (!initialized) return;
 
-        const app = document.getElementById("app");
         app.innerHTML = `
             <div class="h-screen w-full overflow-hidden bg-gray-50">
                 <div class="h-full w-full flex flex-col p-2 sm:p-4 lg:p-8">
@@ -137,17 +144,6 @@ async initialize() {
                     </div>
                 </div>
             </div>
-            
-            <!-- PDF Generation Loading Modal -->
-            <div id="pdfLoadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-                    <div class="flex flex-col items-center text-center">
-                        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mb-4"></div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Generating your PDF report</h3>
-                        <p class="text-gray-600 mb-4">This may take a moment. Please wait...</p>
-                    </div>
-                </div>
-            </div>
         `;
 
         this.attachStyles();
@@ -167,7 +163,10 @@ async initialize() {
         
         try {
             this.isPdfGenerating = true;
-            this.showPdfLoadingModal(true);
+            LoadingUI.showGlobalLoading('Generating your PDF report...', {
+                spinnerSize: 'lg',
+                spinnerColor: 'primary'
+            });
             
             // Get customer info - in a real app, you might want to prompt for this
             const customerInfo = {
@@ -179,7 +178,7 @@ async initialize() {
             // Call the API to generate the PDF
             const response = await Api.quote.generatePDF(this.quoteData, customerInfo);
             
-            this.showPdfLoadingModal(false);
+            LoadingUI.hideGlobalLoading();
             this.isPdfGenerating = false;
             
             if (response?.success && response?.data) {
@@ -188,21 +187,10 @@ async initialize() {
                 throw new Error(response?.error?.message || 'Failed to generate PDF');
             }
         } catch (error) {
-            this.showPdfLoadingModal(false);
+            LoadingUI.hideGlobalLoading();
             this.isPdfGenerating = false;
             console.error('Error generating PDF:', error);
             window.toasts?.show(error.message || 'Failed to generate PDF report', 'error');
-        }
-    }
-    
-    showPdfLoadingModal(show) {
-        const modal = document.getElementById('pdfLoadingModal');
-        if (!modal) return;
-        
-        if (show) {
-            modal.classList.remove('hidden');
-        } else {
-            modal.classList.add('hidden');
         }
     }
 
@@ -231,7 +219,6 @@ async initialize() {
             </div>
         `;
     }
-
 
     renderQuickStats() {
         return `
@@ -384,8 +371,6 @@ async initialize() {
             });
         });
     }
-
-
 
     startAnimations() {
         const cards = document.querySelectorAll('.bg-white, .bg-gradient-to-br');
