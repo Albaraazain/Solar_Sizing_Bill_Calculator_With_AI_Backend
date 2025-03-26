@@ -102,40 +102,34 @@ export class QuoteResultPage {
                     <div class="flex-1 min-h-0 relative">
                         <div class="absolute inset-0 overflow-auto hide-scrollbar">
                             <div class="h-full max-w-[1136px] mx-auto pb-4 sm:pb-6">
-                                <div class="grid grid-cols-1 xl:grid-cols-[1fr,324px] gap-3 sm:gap-4 lg:gap-6">
+                                <div class="grid grid-cols-1 lg:grid-cols-[325px,1fr,325px] gap-3 sm:gap-4 lg:gap-6">
                                     <!-- Left Column -->
                                     <div class="space-y-3 sm:space-y-4 lg:space-y-6">
-                                        <!-- Top Row -->
-                                        <div class="grid grid-cols-1 lg:grid-cols-[325px,1fr] gap-3 sm:gap-4 lg:gap-6">
-                                            <!-- System Size & Stats Cards -->
-                                            <div class="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 lg:gap-6">
-                                                ${this.renderSystemSizeCard()}
-                                                ${this.renderQuickStats()}
-                                            </div>
-                                            
-                                            <!-- Production Chart -->
-                                            <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6">
-                                                <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3 lg:mb-4">Energy Production</h3>
-                                                <div class="h-[200px] sm:h-[250px] lg:h-[300px]">
-                                                    <canvas id="production-chart"></canvas>
-                                                </div>
+                                        ${this.renderSystemSizeCard()}
+                                        ${this.renderEquipmentDetails()}
+                                        ${this.renderPerformanceStats()}
+                                    </div>
+                                    
+                                    <!-- Main Column -->
+                                    <div class="space-y-3 sm:space-y-4 lg:space-y-6">
+                                        <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6">
+                                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3 lg:mb-4">Energy Production</h3>
+                                            <div class="h-[200px] sm:h-[250px] lg:h-[300px]">
+                                                <canvas id="production-chart"></canvas>
                                             </div>
                                         </div>
-                                        <!-- Bottom Row -->
-                                        <div class="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-3 sm:gap-4 lg:gap-6">
-                                            <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6">
-                                                <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3 lg:mb-4">Savings Timeline</h3>
-                                                <div class="h-[200px] sm:h-[250px] lg:h-[300px]">
-                                                    <canvas id="savings-chart"></canvas>
-                                                </div>
+                                        <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6">
+                                            <h3 class="text-sm sm:text-base lg:text-lg font-semibold mb-2 sm:mb-3 lg:mb-4">Savings Timeline</h3>
+                                            <div class="h-[200px] sm:h-[250px] lg:h-[300px]">
+                                                <canvas id="savings-chart"></canvas>
                                             </div>
-                                            ${this.renderEnvironmentalImpact()}
                                         </div>
                                     </div>
 
                                     <!-- Right Column -->
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3 sm:gap-4 lg:gap-6">
-                                        ${this.renderMonthlyProduction()}
+                                    <div class="space-y-3 sm:space-y-4 lg:space-y-6">
+                                        ${this.renderFinancialStats()}
+                                        ${this.renderInstallationDetails()}
                                         ${this.renderCostAnalysis()}
                                     </div>
                                 </div>
@@ -196,6 +190,105 @@ export class QuoteResultPage {
         }
     }
 
+    renderEquipmentDetails() {
+        const { panelType, inverterType, warranty } = this.quoteData.systemDetails;
+        return `
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="text-base sm:text-lg font-semibold mb-3">Equipment Details</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-600">Solar Panels</span>
+                            <span class="text-xs text-emerald-600 font-medium">${warranty.panels}</span>
+                        </div>
+                        <div class="text-sm font-semibold">${panelType.brand}</div>
+                        <div class="text-xs text-gray-500">${panelType.power}W × ${this.quoteData.systemDetails.panelCount} panels</div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-600">Inverter</span>
+                            <span class="text-xs text-emerald-600 font-medium">${warranty.inverter}</span>
+                        </div>
+                        <div class="text-sm font-semibold">${inverterType.brand}</div>
+                        <div class="text-xs text-gray-500">${inverterType.power}kW capacity</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderPerformanceStats() {
+        const { peakHours, performanceRatio } = this.quoteData.production;
+        return `
+            <div class="bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-lg p-4 shadow-sm text-white">
+                <h3 class="text-base sm:text-lg font-semibold mb-3">Performance Stats</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Daily Production</div>
+                        <div class="text-2xl font-bold" id="daily-production">0</div>
+                        <div class="text-xs opacity-80">kilowatt hours</div>
+                    </div>
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Peak Hours</div>
+                        <div class="text-2xl font-bold">${peakHours}</div>
+                        <div class="text-xs opacity-80">hours/day</div>
+                    </div>
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Performance</div>
+                        <div class="text-2xl font-bold">${(performanceRatio * 100).toFixed(0)}%</div>
+                        <div class="text-xs opacity-80">ratio</div>
+                    </div>
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Efficiency</div>
+                        <div class="text-2xl font-bold">${(this.quoteData.production.yearlyDegradation).toFixed(1)}%</div>
+                        <div class="text-xs opacity-80">annual loss</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderFinancialStats() {
+        return `
+            <div class="bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg p-4 shadow-sm text-white">
+                <h3 class="text-base sm:text-lg font-semibold mb-3">Financial Overview</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Monthly Savings</div>
+                        <div class="text-2xl font-bold" id="monthly-savings">0</div>
+                        <div class="text-xs opacity-80">PKR per month</div>
+                    </div>
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Return on Investment</div>
+                        <div class="text-2xl font-bold" id="roi-value">0</div>
+                        <div class="text-xs opacity-80">% annual return</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderInstallationDetails() {
+        const { installationTime, warranty } = this.quoteData.systemDetails;
+        return `
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h3 class="text-base sm:text-lg font-semibold mb-3">Installation</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-sm text-gray-600 mb-1">Estimated Time</div>
+                        <div class="text-xl font-semibold">${installationTime}</div>
+                        <div class="text-xs text-gray-500">standard installation</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600 mb-1">Warranty</div>
+                        <div class="text-xl font-semibold">${warranty.installation}</div>
+                        <div class="text-xs text-gray-500">workmanship coverage</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     renderSystemSizeCard() {
         return `
             <div class="bg-white rounded-lg p-4 shadow-sm">
@@ -239,28 +332,57 @@ export class QuoteResultPage {
         `;
     }
 
-    renderEnvironmentalImpact() {
+    renderSystemDetails() {
+        const {panelType, inverterType, warranty} = this.quoteData.systemDetails;
+        const {peakHours, performanceRatio} = this.quoteData.production;
+        
         return `
-            <div class="bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 text-white">
-                <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Environmental Impact</h3>
+            <div class="bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 text-white">
+                <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-4">System Details</h3>
                 <div class="flex-1 flex flex-col justify-center">
-                    <div class="mb-4 sm:mb-6">
-                        <div class="text-xs sm:text-sm opacity-80 mb-1">CO₂ Offset</div>
-                        <div class="text-xl sm:text-3xl font-bold" id="co2-value">0</div>
-                        <div class="w-full bg-white/20 h-1.5 sm:h-2 rounded-full mt-2">
-                            <div class="bg-white h-full rounded-full" style="width: 75%"></div>
+                    <!-- Financial Metrics -->
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
+                        <div>
+                            <div class="text-xs sm:text-sm opacity-80">ROI</div>
+                            <div class="text-lg sm:text-2xl font-bold" id="roi-value">0</div>
+                            <div class="text-xs opacity-80">% annual return</div>
+                        </div>
+                        <div>
+                            <div class="text-xs sm:text-sm opacity-80">Payback Period</div>
+                            <div class="text-lg sm:text-2xl font-bold" id="payback-value">0</div>
+                            <div class="text-xs opacity-80">years</div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                        <div>
-                            <div class="text-xs sm:text-sm opacity-80">Trees Equivalent</div>
-                            <div class="text-lg sm:text-2xl font-bold" id="trees-value">0</div>
-                            <div class="text-xs opacity-80">saved per year</div>
+                    
+                    <!-- Equipment Details -->
+                    <div class="border-t border-white/20 pt-4 mb-4">
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <div class="text-xs sm:text-sm opacity-80">Panels</div>
+                                <div class="text-sm font-semibold">${panelType.brand}</div>
+                                <div class="text-xs opacity-80">${panelType.power}W • ${warranty.panels}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs sm:text-sm opacity-80">Inverter</div>
+                                <div class="text-sm font-semibold">${inverterType.brand}</div>
+                                <div class="text-xs opacity-80">${inverterType.power}kW • ${warranty.inverter}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-xs sm:text-sm opacity-80">Energy for Homes</div>
-                            <div class="text-lg sm:text-2xl font-bold" id="homes-value">0</div>
-                            <div class="text-xs opacity-80">powered per year</div>
+                    </div>
+                    
+                    <!-- Performance Details -->
+                    <div class="border-t border-white/20 pt-4">
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <div class="text-xs sm:text-sm opacity-80">Performance</div>
+                                <div class="text-sm font-semibold">${(performanceRatio * 100).toFixed(0)}% Ratio</div>
+                                <div class="text-xs opacity-80">${peakHours} peak sun hrs/day</div>
+                            </div>
+                            <div>
+                                <div class="text-xs sm:text-sm opacity-80">Installation</div>
+                                <div class="text-sm font-semibold">${this.quoteData.systemDetails.installationTime}</div>
+                                <div class="text-xs opacity-80">${warranty.installation} warranty</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -279,15 +401,31 @@ export class QuoteResultPage {
     }
 
     renderCostAnalysis() {
+        const { costs } = this.quoteData;
         return `
-            <div class="bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 text-white">
-                <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Cost Analysis</h3>
-                <div class="flex-1 flex flex-col justify-center">
-                    <div class="text-2xl sm:text-4xl font-bold mb-1 sm:mb-2" id="total-cost">0</div>
-                    <div class="text-xs sm:text-sm opacity-80">Total Investment</div>
-                    <div class="mt-3 sm:mt-4 text-xs sm:text-sm bg-white/20 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 inline-flex items-center">
-                        <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            <div class="bg-gradient-to-br from-indigo-700 to-indigo-500 rounded-lg p-4 shadow-sm text-white">
+                <h3 class="text-base sm:text-lg font-semibold mb-3">Cost Breakdown</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-sm opacity-80 mb-1">Total Investment</div>
+                        <div class="text-2xl font-bold" id="total-cost">0</div>
+                        <div class="text-xs opacity-80">all inclusive price</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 pt-3 border-t border-white/20">
+                        <div>
+                            <div class="text-sm opacity-80">Equipment</div>
+                            <div class="text-lg font-semibold">PKR ${Math.round(costs.summary.equipment).toLocaleString()}</div>
+                            <div class="text-xs opacity-80">${Math.round(costs.details.accessories.percentage)}% of total</div>
+                        </div>
+                        <div>
+                            <div class="text-sm opacity-80">Installation</div>
+                            <div class="text-lg font-semibold">PKR ${Math.round(costs.summary.installation).toLocaleString()}</div>
+                            <div class="text-xs opacity-80">${Math.round(costs.details.installation.percentage)}% of total</div>
+                        </div>
+                    </div>
+                    <div class="text-xs bg-white/20 rounded-lg px-3 py-2 inline-flex items-center mt-2">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                         30% Tax Credit Available
@@ -346,22 +484,16 @@ export class QuoteResultPage {
                 formatter: value => `PKR ${Math.round(value).toLocaleString()}`
             },
             {
-                id: "co2-value",
-                value: this.quoteData.environmental.co2Offset,
+                id: "roi-value",
+                value: this.quoteData.financial.roi,
                 decimals: 1,
-                suffix: " tons/year"
+                suffix: "%"
             },
             {
-                id: "trees-value",
-                value: this.quoteData.environmental.treesEquivalent,
-                decimals: 0,
-                suffix: " trees"
-            },
-            {
-                id: "homes-value",
-                value: this.quoteData.environmental.homesEquivalent,
-                decimals: 0,
-                suffix: " homes"
+                id: "payback-value",
+                value: this.quoteData.financial.paybackPeriod,
+                decimals: 1,
+                suffix: " years"
             }
         ];
 
