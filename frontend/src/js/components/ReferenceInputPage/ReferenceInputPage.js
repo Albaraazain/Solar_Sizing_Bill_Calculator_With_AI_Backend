@@ -292,19 +292,6 @@ export class ReferenceInputPage {
                 font-size: 0.875rem;
             }
 
-            .spinner {
-                width: 1.25rem;
-                height: 1.25rem;
-                border: 2px solid rgba(255,255,255,0.3);
-                border-radius: 50%;
-                border-top-color: white;
-                animation: spin 1s linear infinite;
-            }
-
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-
             @media (max-width: 768px) {
                 .layout-grid {
                     grid-template-columns: 1fr;
