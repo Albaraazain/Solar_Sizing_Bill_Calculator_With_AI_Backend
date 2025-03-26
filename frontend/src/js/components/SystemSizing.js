@@ -2,7 +2,6 @@ import { gsap } from "gsap";
 import ProgressBar from "progressbar.js";
 import Chart from "chart.js/auto";
 import { CountUp } from "countup.js";
-import { Api } from "/src/api/index.js";
 
 export class SystemSizing {
     constructor(billData) {
