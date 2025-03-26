@@ -256,10 +256,12 @@ export class QuoteResultPage {
                         <div>
                             <div class="text-xs sm:text-sm opacity-80">Trees Equivalent</div>
                             <div class="text-lg sm:text-2xl font-bold" id="trees-value">0</div>
+                            <div class="text-xs opacity-80">saved per year</div>
                         </div>
                         <div>
                             <div class="text-xs sm:text-sm opacity-80">Energy for Homes</div>
                             <div class="text-lg sm:text-2xl font-bold" id="homes-value">0</div>
+                            <div class="text-xs opacity-80">powered per year</div>
                         </div>
                     </div>
                 </div>
@@ -325,12 +327,14 @@ export class QuoteResultPage {
             {
                 id: "system-size-value",
                 value: this.quoteData.systemDetails.systemSize,
-                decimals: 2
+                decimals: 2,
+                suffix: " kW"
             },
             {
                 id: "daily-production",
                 value: this.quoteData.production.daily,
-                decimals: 1
+                decimals: 1,
+                suffix: " kWh"
             },
             {
                 id: "monthly-savings",
@@ -351,12 +355,14 @@ export class QuoteResultPage {
             {
                 id: "trees-value",
                 value: this.quoteData.environmental.treesEquivalent,
-                decimals: 0
+                decimals: 0,
+                suffix: " trees"
             },
             {
                 id: "homes-value",
                 value: this.quoteData.environmental.homesEquivalent,
-                decimals: 0
+                decimals: 0,
+                suffix: " homes"
             }
         ];
 
