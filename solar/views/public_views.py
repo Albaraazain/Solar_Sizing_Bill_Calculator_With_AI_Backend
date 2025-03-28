@@ -4,12 +4,15 @@ from django.views.generic import TemplateView, View
 from django.http import Http404, JsonResponse
 from django.shortcuts import render
 from django.conf import settings
+from rest_framework import viewsets
 
 from ..services.quote_service import QuoteService
 from ..services.bill_service import BillService
 from ..services.customer_service import CustomerService
 from ..services.notification_service import NotificationService
 from ..middleware.error_handler import AppError
+from ..models import Panel, Inverter
+from ..serializers.admin_serializers import PanelSerializer, InverterSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -205,3 +208,40 @@ class ContactView(View):
             <p>We have received your message and will get back to you as soon as possible.</p>
             <p>Best regards,<br>{settings.COMPANY_NAME} Team</p>
         """
+
+class PublicPanelViewSet(viewsets.ReadOnlyModelViewSet):
+    """Public read-only ViewSet for solar panels."""
+    queryset = Panel.objects.filter(availability=True)
+    serializer_class = PanelSerializer
+
+    def get_queryset(self):
+        queryset = Panel.objects.filter(availability=True)
+        brand = self.request.query_params.get('brand', None)
+        power_min = self.request.query_params.get('power_min', None)
+        power_max = self.request.query_params.get('power_max', None)
+
+        if brand:
+            queryset = queryset.filter(brand__icontains=brand)
+        if power_min:
+            queryset = queryset.filter(power__gte=power_min)
+        if power_max:
+            queryset = queryset.filter(power__lte=power_max)
+
+        return queryset.order_by('-power')
+
+class PublicInverterViewSet(viewsets.ReadOnlyModelViewSet):
+    """Public read-only ViewSet for inverters."""
+    queryset = Inverter.objects.filter(availability=True)
+    serializer_class = InverterSerializer
+
+    def get_queryset(self):
+        queryset = Inverter.objects.filter(availability=True)
+        brand = self.request.query_params.get('brand', None)
+        power_min = self.request.query_params.get('power_min', None)
+
+        if brand:
+            queryset = queryset.filter(brand__icontains=brand)
+        if power_min:
+            queryset = queryset.filter(power__gte=power_min)
+
+        return queryset.order_by('power')
