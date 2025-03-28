@@ -20,6 +20,11 @@ export const API_CONFIG = {
         AUTH: {
             LOGIN: '/auth/login/',              // Added auth endpoints
             REFRESH: '/auth/refresh/'
+        },
+        EQUIPMENT: {
+            BASE: '/equipment',
+            PANELS: '/panels/',
+            INVERTERS: '/inverters/'
         }
     },
     HEADERS: {
