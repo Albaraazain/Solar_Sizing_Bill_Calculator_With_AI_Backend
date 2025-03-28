@@ -2,12 +2,13 @@
 import { gsap } from "gsap";
 import { ReferenceInputPage } from "./components/ReferenceInputPage/ReferenceInputPage.js";
 import { BillReviewPage } from "./components/BillReview/BillReviewPage.js";
-import { QuoteResultPage } from "./components/QuoteResultPage.js";
+// import { QuoteResultPage } from "./components/QuoteResultPage.js";
 import { LoadersShowcase } from "./components/Loaders/LoadersShowcase.js";
 import { loadingManager } from "../core/loading/LoadingManager.js";
 import { LoadingUI } from "../core/loading/LoadingUI.js";
 import { LoaderShowcaseVanilla } from "./pages/LoaderShowcaseVanilla.js";
 import { SolarLoaderDemo } from "./pages/SolarLoaderDemo.js";
+import { QuotePage } from "./pages/QuotePage.jsx";
 
 export class Router {
     constructor() {
@@ -30,7 +31,7 @@ export class Router {
             {
                 path: "/quote",
                 component: () => {
-                    const page = new QuoteResultPage();
+                    const page = new QuotePage();
                     page.render();
                 }
             },
