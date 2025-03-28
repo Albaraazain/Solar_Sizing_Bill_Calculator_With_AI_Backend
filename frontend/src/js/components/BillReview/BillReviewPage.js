@@ -6,6 +6,7 @@ import Chart from "chart.js/auto";
 import { CountUp } from 'countup.js';
 import { loadingManager } from "/src/core/loading/LoadingManager.js";
 import { LoadingUI } from "/src/core/loading/LoadingUI.js";
+import { QuoteValidator, QuoteDataTransformer, ValidationError } from "/src/js/utils/QuoteUtils.js";
 
 export class BillReviewPage {
     constructor() {
@@ -377,7 +378,7 @@ export class BillReviewPage {
                         </p>
 
                         <button
-                            onclick="window.router.push('/quote')"
+                            data-action="generate-quote"
                             class="w-full bg-white hover:bg-white/90 text-emerald-700 px-5 py-2.5 rounded-xl font-medium
                                     transition-all duration-300 shadow-sm hover:shadow-md
                                     flex items-center justify-center gap-2 group"
@@ -442,6 +443,7 @@ export class BillReviewPage {
             await this.renderBillPreview();
             await this.initializeCharts();
             await this.initCounters();
+            this.attachEventListeners();
             await this.startAnimation();
         } catch (error) {
             console.error("Error initializing components:", error);
@@ -723,6 +725,77 @@ export class BillReviewPage {
                 this.charts.consumption.resize();
             }
         }, 250);
+    }
+
+    async generateQuote() {
+        const loadingKey = 'generate_quote';
+        try {
+            await loadingManager.startLoading(loadingKey, {
+                message: 'Generating quote...',
+                type: 'component'
+            });
+
+            // Transform data using utility
+            const quoteData = QuoteDataTransformer.formatBillDataForQuote(
+                this.billData,
+                this.referenceNumber
+            );
+
+            // Validate transformed data
+            const validation = QuoteValidator.validateBillData(quoteData);
+            if (!validation.isValid) {
+                throw new ValidationError(
+                    `Missing required fields: ${validation.errors.join(', ')}`
+                );
+            }
+
+            // Store transformed data for recovery
+            sessionStorage.setItem('quoteGenerationData', JSON.stringify(quoteData));
+            
+            // Generate quote
+            const response = await Api.quote.generateQuote(quoteData);
+            
+            // Validate response using utility
+            if (!QuoteValidator.isValidQuoteResponse(response)) {
+                throw new Error('Invalid or incomplete quote response from server');
+            }
+
+            // Store quote ID for recovery
+            sessionStorage.setItem('lastQuoteId', response.data.quoteId);
+
+            return response;
+        } catch (error) {
+            console.error('Error generating quote:', error);
+            if (error instanceof ValidationError) {
+                window.toasts?.show(error.message, 'error');
+            } else {
+                window.toasts?.show(
+                    'Failed to generate quote. Please verify your bill details.',
+                    'error'
+                );
+            }
+            throw error;
+        } finally {
+            try {
+                await loadingManager.stopLoading(loadingKey);
+            } catch (error) {
+                console.error('Error stopping loading:', error);
+            }
+        }
+    }
+
+    attachEventListeners() {
+        const generateQuoteBtn = document.querySelector('[data-action="generate-quote"]');
+        if (generateQuoteBtn) {
+            generateQuoteBtn.addEventListener('click', async () => {
+                try {
+                    const response = await this.generateQuote();
+                    window.router.push(`/quote?id=${response.data.quoteId}`);
+                } catch (error) {
+                    // Error already handled in generateQuote
+                }
+            });
+        }
     }
 
     cleanup() {
