@@ -11,14 +11,20 @@ from .views import (
     bill_views,
     quote_views,
     customer_views,
-    admin_views
+    admin_views,
+    public_views
 )
 from .views.health_views import health_check
 
-# Create router for viewsets
-router = DefaultRouter()
-router.register(r'panels', admin_views.PanelViewSet)
-router.register(r'inverters', admin_views.InverterViewSet)
+# Create routers for viewsets
+admin_router = DefaultRouter()
+admin_router.register(r'panels', admin_views.PanelViewSet)
+admin_router.register(r'inverters', admin_views.InverterViewSet)
+
+# Public equipment router
+equipment_router = DefaultRouter()
+equipment_router.register(r'panels', public_views.PublicPanelViewSet)
+equipment_router.register(r'inverters', public_views.PublicInverterViewSet)
 
 urlpatterns = [
     # Bill endpoints
@@ -39,9 +45,12 @@ urlpatterns = [
     path('customers/bulk-create/', customer_views.CustomerBulkCreateAPIView.as_view(), name='customer-bulk-create'),
     path('customers/stats/', customer_views.CustomerStatsAPIView.as_view(), name='customer-stats'),
 
+    # Equipment endpoints (public)
+    path('equipment/', include(equipment_router.urls)),
+
     # Admin endpoints
     path('admin/', include([
-        path('', include(router.urls)),
+        path('', include(admin_router.urls)),
         path('prices/', admin_views.PriceConfigurationView.as_view(), name='price-configuration'),
         path('dashboard/', include([
             path('stats/', dashboard_views.DashboardMetricsView.as_view(), name='dashboard-stats'),
