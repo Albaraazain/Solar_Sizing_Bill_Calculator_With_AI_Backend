@@ -38,7 +38,7 @@ export class QuoteApi extends BaseApiService {
             throw error;
         }
     }
-    
+
     async generatePDF(quoteData, customerInfo = {}) {
         try {
             console.log('Generating PDF for quote:', quoteData);
