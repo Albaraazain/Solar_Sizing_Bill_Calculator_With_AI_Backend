@@ -80,49 +80,41 @@ class BillService(BaseService):
             AppError: If bill fetch or processing fails
         """
         try:
+            print(f"[DEBUG] Getting bill details for reference number: {reference_number}")
+            
             # First validate the bill
             bill = bill_reader(reference_number)
-            if bill.name == "Not found":
+            print(f"[DEBUG] Raw bill data received: {bill}")
+            
+            if bill.get('Name') == "Not found":
+                print("[DEBUG] Bill not found")
                 raise AppError(
                     message='Invalid bill reference',
                     code=ErrorTypes.VALIDATION_ERROR
                 )
-            #validation = cls.validate_bill(reference_number)
-            #if not validation['data']['isValid']:
-            #    raise AppError(
-            #        message='Invalid bill reference',
-            #        code=ErrorTypes.VALIDATION_ERROR
-            #    )
-
-            # Fetch bill HTML
-            #response = requests.get(validation['data']['source_url'])
-            #if response.status_code != 200:
-            #    raise AppError(
-            #        message='Failed to fetch bill',
-            #        code=ErrorTypes.SERVICE_ERROR
-            #    )
-
-            # Parse bill using appropriate parser
-            #parser = get_parser_for_bill(
-            #    validation['data']['type'],
-            #    response.text
-            #)
-            #bill_data = parser.parse_bill()
-
-            #if not bill_data:
-            #    raise AppError(
-            #        message='Failed to parse bill data',
-            #        code=ErrorTypes.SERVICE_ERROR
-            #    )
 
             # Calculate system sizing and enhancements
-            yearly_units = int(bill['Total Yearly Units'])
-            print(f"Yearly units: {yearly_units}")
-            system_sizing = cls.calculate_system_sizing(yearly_units)
-
-            return cls.format_response(
-                cls._enhance_bill_data(bill, system_sizing)
-            )
+            try:
+                yearly_units = int(bill['Total Yearly Units'])
+                print(f"[DEBUG] Calculated yearly units: {yearly_units}")
+                
+                system_sizing = cls.calculate_system_sizing(yearly_units)
+                print(f"[DEBUG] Calculated system sizing: {system_sizing}")
+                
+                enhanced_data = cls._enhance_bill_data(bill, system_sizing)
+                print(f"[DEBUG] Enhanced bill data: {enhanced_data}")
+                
+                final_response = cls.format_response(enhanced_data)
+                print(f"[DEBUG] Final formatted response: {final_response}")
+                
+                return final_response
+            except KeyError as e:
+                print(f"[DEBUG] KeyError while processing bill data: {str(e)}")
+                raise AppError(
+                    message=f'Missing required field: {str(e)}',
+                    code=ErrorTypes.DATA_ERROR,
+                    data={'missing_field': str(e)}
+                )
 
         except AppError:
             raise
@@ -326,19 +318,42 @@ class BillService(BaseService):
     def _enhance_bill_data(bill_data: Dict[str, Any], system_sizing: Dict[str, float]) -> Dict[str, Any]:
         """Enhance bill data with calculated fields."""
         try:
-            return {
+            print(f"[DEBUG] Starting to enhance bill data. Input data: {bill_data}")
+            print(f"[DEBUG] System sizing data: {system_sizing}")
+            
+            # Extract and convert values with detailed logging
+            customer_name = bill_data.get('Name', '')
+            print(f"[DEBUG] Extracted customer name: {customer_name}")
+            
+            raw_units = bill_data.get('Units Consumed', '0')
+            print(f"[DEBUG] Raw units consumed: {raw_units}")
+            units_consumed = int(raw_units)
+            print(f"[DEBUG] Converted units consumed: {units_consumed}")
+            
+            due_date = bill_data.get('Due Date', '')
+            print(f"[DEBUG] Extracted due date: {due_date}")
+            
+            issue_date = bill_data.get('Issue Date', '')
+            print(f"[DEBUG] Extracted issue date: {issue_date}")
+            
+            raw_amount = bill_data.get('Payable Within Due Date', '0')
+            print(f"[DEBUG] Raw amount: {raw_amount}")
+            cleaned_amount = raw_amount.replace('PKR ', '').replace(',', '')
+            print(f"[DEBUG] Cleaned amount string: {cleaned_amount}")
+            amount = float(cleaned_amount)
+            print(f"[DEBUG] Converted amount: {amount}")
+            
+            enhanced_data = {
                 **bill_data,
-                'customerName': bill_data.get('Name', ''),
-                'unitsConsumed': int(bill_data.get('Units Consumed', 0)),
-                'dueDate': bill_data.get('Due Date', ''),
-                'issueDate': bill_data.get('Issue Date', ''),
-                'amount': float(
-                    bill_data.get('Payable Within Due Date', '0')
-                    .replace('PKR ', '')
-                    .replace(',', '')
-                ),
+                'customerName': customer_name,
+                'unitsConsumed': units_consumed,
+                'dueDate': due_date,
+                'issueDate': issue_date,
+                'amount': amount,
                 'systemSizing': system_sizing
             }
+            print(f"[DEBUG] Final enhanced data: {enhanced_data}")
+            return enhanced_data
         except (ValueError, AttributeError) as e:
             raise AppError(
                 message='Failed to process bill data',

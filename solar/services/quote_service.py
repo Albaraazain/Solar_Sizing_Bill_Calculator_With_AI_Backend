@@ -181,7 +181,22 @@ class QuoteService(BaseService):
     @classmethod
     def _calculate_panels_needed(cls, system_size: float, panel_power: Decimal) -> int:
         """Calculate number of panels needed."""
-        return math.ceil((system_size * 1000) / float(panel_power))
+        try:
+            # Convert all values to float for consistent calculations
+            system_watts = float(system_size * 1000)  # Convert kW to W
+            panel_watts = float(panel_power)
+            panels = math.ceil(system_watts / panel_watts)
+            logger.info(f"Panel calculation: {system_watts}W / {panel_watts}W = {panels} panels")
+            return panels
+        except (ValueError, TypeError) as e:
+            logger.error(f"Error calculating panels needed: {str(e)}")
+            logger.error(f"system_size: {system_size} (type: {type(system_size)})")
+            logger.error(f"panel_power: {panel_power} (type: {type(panel_power)})")
+            raise AppError(
+                message='Error calculating number of panels',
+                code='CALCULATION_ERROR',
+                data={'error': str(e)}
+            )
 
     @classmethod
     def _get_suitable_inverter(cls, system_size: float) -> Inverter:
@@ -206,6 +221,14 @@ class QuoteService(BaseService):
             logger.info(f"Calculating costs for {system_size}kW system with {panels_count} panels")
 
             # Get variable costs with defaults
+            # Initialize costs dictionary with safe float conversion
+            def safe_float(value):
+                try:
+                    return float(value)
+                except (ValueError, TypeError, AttributeError) as e:
+                    logger.error(f"Error converting value to float: {value} ({type(value)})")
+                    return 0.0
+
             variable_costs = {}
             required_costs = [
                 'Net Metering',
@@ -214,40 +237,74 @@ class QuoteService(BaseService):
                 'Labor Cost'
             ]
             
+            # Load costs with logging
             for cost in VariableCosts.objects.all():
-                variable_costs[cost.cost_name] = float(cost.cost)
+                logger.info(f"Loading cost {cost.cost_name}: {cost.cost} ({type(cost.cost)})")
+                variable_costs[cost.cost_name] = safe_float(cost.cost)
             
-            # Check for missing costs and use defaults
+            # Check for missing costs and use defaults with explicit float conversion
             for required_cost in required_costs:
                 if required_cost not in variable_costs:
                     logger.warning(f"Missing cost: {required_cost}, using default")
-                    default_values = {
-                        'Net Metering': VariableCosts.objects.get(cost_name='Net Metering').cost,
-                        'Installation Cost per Watt': VariableCosts.objects.get(cost_name='Installation Cost per Watt').cost,
-                        'Frame Cost per Watt': VariableCosts.objects.get(cost_name='Frame Cost per Watt').cost,
-                        'Labor Cost': 5000
-                    }
-                    variable_costs[required_cost] = default_values[required_cost]
+                    try:
+                        default_values = {
+                            'Net Metering': safe_float(VariableCosts.objects.get(cost_name='Net Metering').cost),
+                            'Installation Cost per Watt': safe_float(VariableCosts.objects.get(cost_name='Installation Cost per Watt').cost),
+                            'Frame Cost per Watt': safe_float(VariableCosts.objects.get(cost_name='Frame Cost per Watt').cost),
+                            'Labor Cost': 5000.0
+                        }
+                        variable_costs[required_cost] = default_values[required_cost]
+                        logger.info(f"Set default for {required_cost}: {variable_costs[required_cost]}")
+                    except Exception as e:
+                        logger.error(f"Error setting default for {required_cost}: {str(e)}")
+                        raise
 
             # Get bracket costs
             bracket_costs = InventoryService.get_bracket_costs(system_size)
             logger.info(f"Retrieved bracket costs: {bracket_costs}")
 
-            costs = {
-                'net_metering': variable_costs['Net Metering'],
-                'installation': variable_costs['Installation Cost per Watt'] * system_size * 1000,
-                'frame': variable_costs['Frame Cost per Watt'] * system_size * 1000,
-                'labor': variable_costs['Labor Cost'] * system_size,
-                'dc_cable': bracket_costs['dc_cable'],
-                'ac_cable': bracket_costs['ac_cable'],
-                'accessories': bracket_costs['accessories'],
-                'transport': cls._calculate_transport_cost(system_size),
-                'margin': 0,
-                'vat': 0
+            # Convert bracket costs to float
+            safe_bracket_costs = {
+                k: safe_float(v) for k, v in bracket_costs.items()
             }
+            logger.info(f"Converted bracket costs to float: {safe_bracket_costs}")
 
-            logger.info(f"Final calculated costs: {costs}")
-            return costs
+            # Calculate all costs with explicit float conversions and logging
+            try:
+                costs = {
+                    'net_metering': safe_float(variable_costs['Net Metering']),
+                    'installation': safe_float(variable_costs['Installation Cost per Watt']) * float(system_size) * 1000.0,
+                    'frame': safe_float(variable_costs['Frame Cost per Watt']) * float(system_size) * 1000.0,
+                    'labor': safe_float(variable_costs['Labor Cost']) * float(system_size),
+                    'dc_cable': safe_float(safe_bracket_costs['dc_cable']),
+                    'ac_cable': safe_float(safe_bracket_costs['ac_cable']),
+                    'accessories': safe_float(safe_bracket_costs['accessories']),
+                    'transport': safe_float(cls._calculate_transport_cost(system_size)),
+                    'margin': 0.0,
+                    'vat': 0.0
+                }
+
+                # Log each cost calculation
+                logger.info("Individual cost calculations:")
+                for key, value in costs.items():
+                    logger.info(f"{key}: {value} (type: {type(value)})")
+
+                logger.info(f"Final calculated costs: {costs}")
+                return costs
+
+            except KeyError as e:
+                logger.error(f"Missing cost key: {str(e)}")
+                raise AppError(
+                    message=f'Missing required cost: {str(e)}',
+                    code='COST_ERROR'
+                )
+            except (ValueError, TypeError) as e:
+                logger.error(f"Cost calculation error: {str(e)}")
+                raise AppError(
+                    message='Error in cost calculations',
+                    code='CALCULATION_ERROR',
+                    data={'error': str(e)}
+                )
 
         except Exception as e:
             logger.exception("Error calculating costs")

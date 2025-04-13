@@ -1,5 +1,7 @@
 // src/js/components/ReferenceInputPage/ReferenceInputPage.js
 import { Api } from "/src/api/index.js";
+import { loadingManager } from "/src/core/loading/LoadingManager.js";
+import { LoadingUI } from "/src/core/loading/LoadingUI.js";
 
 export class ReferenceInputPage {
   constructor() {
@@ -7,9 +9,10 @@ export class ReferenceInputPage {
       provider: "",
       referenceNumber: "",
       whatsapp: "",
-      isLoading: false,
       error: null,
     };
+
+    this.loadingKey = 'reference_input_submit';
 
     this.injectBaseStyles();
   }
@@ -45,77 +48,95 @@ export class ReferenceInputPage {
   }
 
   getFormTemplate() {
+    const isLoading = loadingManager.isLoading(this.loadingKey);
     return `
-            <form id="quote-form" class="space-y-6">
-                <!-- Provider Field -->
-                <div class="form-group">
-                    <label class="form-label" for="provider">
-                        Choose your electricity Provider
-                    </label>
-                    <input 
-                        type="text" 
-                        id="provider"
-                        class="form-input"
-                        placeholder="e.g., MEPCO"
-                        value="${this.state.provider}"
-                        ${this.state.isLoading ? "disabled" : ""}
+            <form id="quote-form" class="space-y-6 relative">
+                <!-- Form Content -->
+                <div class="${isLoading ? 'opacity-50' : ''}">
+                    <!-- Provider Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="provider">
+                            Choose your electricity Provider
+                        </label>
+                        <input
+                            type="text"
+                            id="provider"
+                            class="form-input"
+                            placeholder="e.g., MEPCO"
+                            value="${this.state.provider}"
+                            ${isLoading ? "disabled" : ""}
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="referenceNumber">
+                            Enter your bill reference number
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="referenceNumber"
+                                class="form-input ${
+                                  this.state.error ? "border-red-500" : ""
+                                }"
+                                placeholder="Enter 9-digit reference number"
+                                value="${this.state.referenceNumber}"
+                                ${isLoading ? "disabled" : ""}
+                            >
+                            ${
+                              isLoading
+                                ? '<div class="absolute right-3 top-1/2 -translate-y-1/2">' +
+                                  LoadingUI.createSpinner('sm', 'primary').outerHTML +
+                                  '</div>'
+                                : ''
+                            }
+                        </div>
+                        ${
+                          this.state.error
+                            ? `
+                            <p class="mt-1 text-sm text-red-600">
+                                ${this.state.error}
+                            </p>
+                        `
+                            : ""
+                        }
+                    </div>
+
+                    <!-- WhatsApp Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="whatsapp">
+                            Enter your WhatsApp phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            id="whatsapp"
+                            class="form-input"
+                            placeholder="+92 XXX XXXXXXX"
+                            value="${this.state.whatsapp}"
+                            ${isLoading ? "disabled" : ""}
+                        >
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button
+                        type="submit"
+                        class="submit-button relative"
+                        ${isLoading ? "disabled" : ""}
                     >
+                        <span class="${isLoading ? 'invisible' : ''}">
+                            Generate Quote
+                        </span>
+                        ${
+                          isLoading
+                            ? `
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-white mr-2">Processing</span>
+                                ${LoadingUI.createSpinner('sm', 'white').outerHTML}
+                            </div>`
+                            : ""
+                        }
+                    </button>
                 </div>
-
-                <div class="form-group">
-                <label class="form-label" for="referenceNumber">
-                    Enter your bill reference number
-                </label>
-                <input 
-                    type="text" 
-                    id="referenceNumber"
-                    class="form-input ${
-                      this.state.error ? "border-red-500" : ""
-                    }"
-                    placeholder="Enter 9-digit reference number"
-                    value="${this.state.referenceNumber}"
-                    ${this.state.isLoading ? "disabled" : ""}
-                >
-                ${
-                  this.state.error
-                    ? `
-                    <p class="mt-1 text-sm text-red-600">
-                        ${this.state.error}
-                    </p>
-                `
-                    : ""
-                }
-            </div>
-
-                <!-- WhatsApp Field -->
-                <div class="form-group">
-                    <label class="form-label" for="whatsapp">
-                        Enter your WhatsApp phone Number
-                    </label>
-                    <input 
-                        type="tel" 
-                        id="whatsapp"
-                        class="form-input"
-                        placeholder="+92 XXX XXXXXXX"
-                        value="${this.state.whatsapp}"
-                        ${this.state.isLoading ? "disabled" : ""}
-                    >
-                </div>
-
-                <!-- Submit Button -->
-                <button 
-                    type="submit" 
-                    class="submit-button"
-                    ${this.state.isLoading ? "disabled" : ""}
-                >
-                    ${
-                      this.state.isLoading
-                        ? `<span>Processing</span>
-                         <div class="spinner"></div>`
-                        : "Generate Quote"
-                    }
-                </button>
-
             </form>
         `;
   }
@@ -271,19 +292,6 @@ export class ReferenceInputPage {
                 font-size: 0.875rem;
             }
 
-            .spinner {
-                width: 1.25rem;
-                height: 1.25rem;
-                border: 2px solid rgba(255,255,255,0.3);
-                border-radius: 50%;
-                border-top-color: white;
-                animation: spin 1s linear infinite;
-            }
-
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-
             @media (max-width: 768px) {
                 .layout-grid {
                     grid-template-columns: 1fr;
@@ -358,11 +366,15 @@ export class ReferenceInputPage {
 
   handleSubmit = async (event) => {
     event.preventDefault();
-    if (this.state.isLoading) return;
+    if (loadingManager.isLoading(this.loadingKey)) return;
 
     try {
+      loadingManager.startLoading(this.loadingKey, {
+        message: 'Validating reference number...',
+        type: 'action'
+      });
 
-        this.setState({ isLoading: true, error: null });
+      this.setState({ error: null });
 
       const response = await Api.bill.validateReferenceNumber(
         this.state.referenceNumber
@@ -373,21 +385,26 @@ export class ReferenceInputPage {
           "currentReferenceNumber",
           this.state.referenceNumber
         );
+
+        // Start page transition loading
+        loadingManager.startLoading('page_transition', {
+          message: 'Loading bill review...',
+          isGlobal: true,
+          type: 'page'
+        });
+
         window.router.push("/bill-review");
       }
     } catch (error) {
-      this.setState({
-        error:
-          error.message ||
-          "Failed to validate reference number. Please try again.",
-        isLoading: false,
-      });
-
-      // Show toast notification if available
-      if (window.toasts) {
-        window.toasts.show(error.message, "error");
-      }
+      const errorMessage = error.message || "Failed to validate reference number. Please try again.";
       
+      this.setState({ error: errorMessage });
+
+      if (window.toasts) {
+        window.toasts.show(errorMessage, "error");
+      }
+    } finally {
+      loadingManager.stopLoading(this.loadingKey);
     }
   };
 

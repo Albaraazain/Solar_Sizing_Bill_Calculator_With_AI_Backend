@@ -104,5 +104,81 @@ export class MockQuoteApi extends BaseApiService {
         await new Promise(resolve => setTimeout(resolve, delay));
     }
 
+    async getPanels() {
+        await this.simulateDelay();
+        console.log('Fetching mock panels');
 
+        const mockPanels = [
+            {
+                id: 1,
+                brand: "Longhi",
+                power: 545,
+                price: 400,
+                default_choice: false,
+                availability: true
+            },
+            {
+                id: 2,
+                brand: "Canada Solar",
+                power: 580,
+                price: 57,
+                default_choice: true,
+                availability: true
+            },
+            {
+                id: 3,
+                brand: "Longi",
+                power: 545,
+                price: 34,
+                default_choice: false,
+                availability: true
+            }
+        ];
+
+        return {
+            success: true,
+            data: mockPanels
+        };
+    }
+
+    async getInverters() {
+        await this.simulateDelay();
+        console.log('Fetching mock inverters');
+
+        const mockInverters = [
+            {
+                id: 1,
+                brand: "Maxpower",
+                power: 5,
+                price: 100000,
+                availability: true
+            },
+            {
+                id: 2,
+                brand: "Maxpower",
+                power: 8,
+                price: 170000,
+                availability: true
+            },
+            {
+                id: 3,
+                brand: "Maxpower",
+                power: 10,
+                price: 20000,
+                availability: true
+            },
+            {
+                id: 4,
+                brand: "Maxpower",
+                power: 15,
+                price: 250000,
+                availability: true
+            }
+        ];
+
+        return {
+            success: true,
+            data: mockInverters
+        };
+    }
 }

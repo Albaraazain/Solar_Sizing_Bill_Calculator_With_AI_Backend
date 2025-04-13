@@ -53,13 +53,46 @@ export class BaseApiService {
     }
 
     _formatResponse(response) {
-        // Ensure consistent response structure
-        return {
+        console.log('Raw response:', response);
+
+        let responseData;
+        
+        // Try all possible data structures
+        if (Array.isArray(response)) {
+            console.log('Case 1: Direct array response');
+            responseData = response;
+        } else if (Array.isArray(response.data)) {
+            console.log('Case 2: Array in response.data');
+            responseData = response.data;
+        } else if (response.data?.data && Array.isArray(response.data.data)) {
+            console.log('Case 3: Array in response.data.data');
+            responseData = response.data.data;
+        } else if (response.data?.success && Array.isArray(response.data?.data)) {
+            console.log('Case 4: Success wrapper with array');
+            responseData = response.data.data;
+        } else if (response.data?.data) {
+            console.log('Case 5: Nested data object');
+            responseData = response.data.data;
+        } else if (response.data) {
+            console.log('Case 6: Direct data object');
+            responseData = response.data;
+        } else {
+            console.log('Case 7: Fallback to entire response');
+            responseData = response;
+        }
+
+        console.log('Extracted response data:', responseData);
+        
+        const formattedResponse = {
             success: true,
-            data: response.data,
+            data: responseData,
             status: response.status,
             headers: response.headers
         };
+        
+        console.log('Final formatted response:', formattedResponse);
+        
+        return formattedResponse;
     }
 
 

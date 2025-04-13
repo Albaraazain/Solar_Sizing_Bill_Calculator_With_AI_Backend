@@ -2,10 +2,17 @@
 import { gsap } from "gsap";
 import { ReferenceInputPage } from "./components/ReferenceInputPage/ReferenceInputPage.js";
 import { BillReviewPage } from "./components/BillReview/BillReviewPage.js";
-import { QuoteResultPage } from "./components/QuoteResultPage.js";
+// import { QuoteResultPage } from "./components/QuoteResultPage.js";
+import { LoadersShowcase } from "./components/Loaders/LoadersShowcase.js";
+import { loadingManager } from "../core/loading/LoadingManager.js";
+import { LoadingUI } from "../core/loading/LoadingUI.js";
+import { LoaderShowcaseVanilla } from "./pages/LoaderShowcaseVanilla.js";
+import { SolarLoaderDemo } from "./pages/SolarLoaderDemo.js";
+import { QuotePage } from "./pages/QuotePage.jsx";
 
 export class Router {
     constructor() {
+        this.TRANSITION_DURATION = 300; // milliseconds
         this.routes = [
             {
                 path: "/",
@@ -24,7 +31,28 @@ export class Router {
             {
                 path: "/quote",
                 component: () => {
-                    const page = new QuoteResultPage();
+                    const page = new QuotePage();
+                    page.render();
+                }
+            },
+            {
+                path: "/loaders",
+                component: () => {
+                    const page = new LoadersShowcase();
+                    page.render();
+                }
+            },
+            {
+                path: "/solar-loaders",
+                component: () => {
+                    const page = new LoaderShowcaseVanilla();
+                    page.render();
+                }
+            },
+            {
+                path: "/solar-loader-test",
+                component: () => {
+                    const page = new SolarLoaderDemo();
                     page.render();
                 }
             }
@@ -40,38 +68,100 @@ export class Router {
         window.addEventListener('DOMContentLoaded', this.navigate);
     }
 
-    navigate() {
+    async navigate() {
         const path = window.location.pathname;
         console.log('Current path:', path);
 
         const route = this.routes.find(route => route.path === path) || this.routes[0];
+        const loadingKey = `page_transition_${path}`;
 
         if (route) {
             console.log('Rendering route:', route.path);
             try {
-                // Cleanup previous component
-                if (this.currentComponent && this.currentComponent.cleanup) {
-                    this.currentComponent.cleanup();
+                try {
+                    // Start loading state
+                    await loadingManager.startLoading(loadingKey, {
+                        message: 'Loading page...',
+                        isGlobal: true,
+                        type: 'page'
+                    });
+
+                    // Fade out current content
+                    const app = document.getElementById('app');
+                    if (!app) throw new Error('App container not found');
+
+                    await this.fadeOut(app);
+
+                    // Cleanup previous component
+                    if (this.currentComponent && this.currentComponent.cleanup) {
+                        this.currentComponent.cleanup();
+                    }
+
+                    // Clear any existing GSAP animations
+                    gsap.killTweensOf("*");
+
+                    // Show loading UI
+                    app.innerHTML = this.getLoadingTemplate();
+
+                    // Simulate minimum transition time for better UX
+                    await this.wait(Math.max(0, this.TRANSITION_DURATION - 100));
+
+                    // Render new component
+                    route.component();
+
+                    // Fade in new content
+                    await this.fadeIn(app);
+
+                } catch (error) {
+                    console.error('Error rendering route:', error);
+                    this.handleRouteError();
+                } finally {
+                    // Stop loading state
+                    try {
+                        await loadingManager.stopLoading(loadingKey);
+                    } catch (error) {
+                        console.error('Error stopping loading state:', error);
+                    }
                 }
-
-                // Clear any existing GSAP animations
-                gsap.killTweensOf("*");
-
-                // Reset the app container
-                const app = document.getElementById('app');
-                app.style.opacity = '1';
-                app.style.visibility = 'visible';
-
-                // Render new component
-                route.component();
             } catch (error) {
-                console.error('Error rendering route:', error);
+                console.error('Navigation error:', error);
                 this.handleRouteError();
             }
         } else {
             console.error('Route not found for path:', path);
             this.handleRouteError();
         }
+    }
+
+    getLoadingTemplate() {
+        return LoadingUI.createPageLoadingTemplate('Loading...', 'bg-white');
+    }
+
+    fadeOut(element) {
+        return new Promise(resolve => {
+            gsap.to(element, {
+                opacity: 0,
+                duration: this.TRANSITION_DURATION / 1000,
+                onComplete: resolve
+            });
+        });
+    }
+
+    fadeIn(element) {
+        return new Promise(resolve => {
+            gsap.fromTo(element,
+                { opacity: 0 },
+                {
+                    opacity: 1,
+                    duration: this.TRANSITION_DURATION / 1000,
+                    onComplete: resolve
+                }
+            );
+        });
+    }
+
+    wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     push(path) {

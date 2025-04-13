@@ -2,8 +2,9 @@
 import fpdf  # For creating pdf files
 import PyPDF2
 import datetime  # For getting the current date
-import fitz 
+import fitz
 import os
+import logging
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 import tempfile
@@ -16,37 +17,74 @@ from email.mime.base import MIMEBase
 from email import encoders
 import math
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
 def merge_pdfs(pdf_list, output_filename):
-    merged_pdf = PyPDF2.PdfWriter()
+    """Merge multiple PDFs into a single file."""
+    logger.info(f"Merging PDFs into: {output_filename}")
+    try:
+        merged_pdf = PyPDF2.PdfWriter()
 
-    for pdf in pdf_list:
-        with open(pdf, 'rb') as f:
-            reader = PyPDF2.PdfReader(f)
-            for page in range(reader.numPages):
-                merged_pdf.add_page(reader.getPage(page))
+        for pdf in pdf_list:
+            if not os.path.exists(pdf):
+                raise FileNotFoundError(f"PDF file not found: {pdf}")
+                
+            try:
+                with open(pdf, 'rb') as f:
+                    reader = PyPDF2.PdfReader(f)
+                    for page in range(len(reader.pages)):
+                        merged_pdf.add_page(reader.pages[page])
+                    logger.info(f"Added {len(reader.pages)} pages from {pdf}")
+            except Exception as e:
+                logger.error(f"Error reading PDF {pdf}: {str(e)}")
+                raise
 
-    with open(output_filename, 'wb') as f:
-        merged_pdf.write(f)
+        with open(output_filename, 'wb') as f:
+            merged_pdf.write(f)
+            logger.info(f"Successfully merged PDFs into {output_filename}")
+
+    except Exception as e:
+        logger.error(f"Error merging PDFs: {str(e)}")
+        raise
 
 def add_pdf_to_middle(existing_pdf, pdf_to_add, page_number, output_filename):
-    merged_pdf = PyPDF2.PdfWriter()
+    """Insert a PDF into another PDF at a specified page number."""
+    logger.info(f"Adding {pdf_to_add} to {existing_pdf} at page {page_number}")
+    try:
+        # Validate input files
+        if not os.path.exists(existing_pdf):
+            raise FileNotFoundError(f"Existing PDF not found: {existing_pdf}")
+        if not os.path.exists(pdf_to_add):
+            raise FileNotFoundError(f"PDF to add not found: {pdf_to_add}")
 
-    with open(existing_pdf, 'rb') as f1, open(pdf_to_add, 'rb') as f2:
-        existing_reader = PyPDF2.PdfReader(f1)
-        pdf_to_add_reader = PyPDF2.PdfReader(f2)
+        merged_pdf = PyPDF2.PdfWriter()
 
-        for page in range(len(existing_reader.pages)):
-            if page == page_number:
-                for add_page in range(len(pdf_to_add_reader.pages)):
-                    merged_pdf.add_page(pdf_to_add_reader.pages[add_page])
-            merged_pdf.add_page(existing_reader.pages[page])
+        with open(existing_pdf, 'rb') as f1, open(pdf_to_add, 'rb') as f2:
+            existing_reader = PyPDF2.PdfReader(f1)
+            pdf_to_add_reader = PyPDF2.PdfReader(f2)
 
-    with open(output_filename, 'wb') as f:
-        merged_pdf.write(f)
+            total_pages = len(existing_reader.pages)
+            if page_number > total_pages:
+                logger.warning(f"Page number {page_number} exceeds document length. Using last page.")
+                page_number = total_pages
 
+            # Add pages with the new PDF inserted at the specified position
+            for page in range(len(existing_reader.pages)):
+                if page == page_number:
+                    for add_page in range(len(pdf_to_add_reader.pages)):
+                        merged_pdf.add_page(pdf_to_add_reader.pages[add_page])
+                        logger.info(f"Added page {add_page + 1} from {pdf_to_add}")
+                merged_pdf.add_page(existing_reader.pages[page])
 
-    with open(output_filename, 'wb') as f:
-        merged_pdf.write(f)
+            # Write the final PDF
+            with open(output_filename, 'wb') as output:
+                merged_pdf.write(output)
+                logger.info(f"Successfully created {output_filename}")
+
+    except Exception as e:
+        logger.error(f"Error in add_pdf_to_middle: {str(e)}")
+        raise
 
 
 import fitz  # Import the PyMuPDF library
@@ -87,52 +125,100 @@ def replace_text(input_pdf, output_pdf, replacements, zoom_factor=3.0):
     # Clean up
     doc.close()
     
+def get_output_directory():
+    """Get the directory where output files should be saved."""
+    try:
+        # Try different methods to get user's document directory
+        if os.name == 'nt':  # Windows
+            docs_path = os.path.join(os.path.expanduser('~'), 'Documents')
+        else:  # Linux/Unix
+            docs_path = os.path.join(os.path.expanduser('~'), 'Documents')
+            if not os.path.exists(docs_path):
+                docs_path = os.path.expanduser('~')  # Fallback to home directory
+        
+        # Create output directory if it doesn't exist
+        output_dir = os.path.join(docs_path, 'EnergyCove_Quotes')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        logger.info(f"Using output directory: {output_dir}")
+        return output_dir
+    except Exception as e:
+        logger.error(f"Error setting up output directory: {str(e)}")
+        # Fallback to current directory
+        fallback_dir = os.path.join(os.getcwd(), 'generated_quotes')
+        os.makedirs(fallback_dir, exist_ok=True)
+        return fallback_dir
+
 def send_email_with_attachment(subject, body, to_email, attachment_path):
-    from_email = "royaltaj.care@gmail.com"  # replace with your email
-    from_password = "gxsd elyy djzb kldu"  # replace with your email password
+    """Send an email with an attachment using configured SMTP settings."""
+    logger.info(f"Preparing to send email to {to_email}")
+    
+    # Email configuration from environment variables
+    from_email = os.getenv('EMAIL_FROM', "royaltaj.care@gmail.com")
+    from_password = os.getenv('EMAIL_PASSWORD', "gxsd elyy djzb kldu")
+    smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.getenv('SMTP_PORT', '587'))
 
-    # Create a multipart message
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Subject'] = subject
+    try:
+        # Validate attachment exists
+        if not os.path.exists(attachment_path):
+            raise FileNotFoundError(f"Attachment not found: {attachment_path}")
 
-    # Attach the body with the msg instance
-    msg.attach(MIMEText(body, 'plain'))
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = from_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
 
-    # Open the file as binary mode
-    with open(attachment_path, "rb") as attachment:
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(attachment.read())
+        # Attach file
+        logger.info(f"Attaching file: {attachment_path}")
+        try:
+            with open(attachment_path, "rb") as attachment:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment.read())
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    f"attachment; filename= {os.path.basename(attachment_path)}",
+                )
+                msg.attach(part)
+        except Exception as e:
+            logger.error(f"Error attaching file: {str(e)}")
+            raise
 
-    # Encode the file in ASCII characters to send by email    
-    encoders.encode_base64(part)
+        # Send email
+        logger.info("Connecting to SMTP server...")
+        server = None
+        try:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(from_email, from_password)
+            text = msg.as_string()
+            server.sendmail(from_email, to_email, text)
+            logger.info(f"Email sent successfully to {to_email}")
+        except smtplib.SMTPAuthenticationError:
+            logger.error("SMTP Authentication failed")
+            raise
+        except smtplib.SMTPException as e:
+            logger.error(f"SMTP error occurred: {str(e)}")
+            raise
+        finally:
+            if server:
+                server.quit()
+                logger.info("SMTP connection closed")
 
-    # Add header as key/value pair to the attachment part
-    part.add_header(
-        "Content-Disposition",
-        f"attachment; filename= {os.path.basename(attachment_path)}",
-    )
-
-    # Attach the attachment to the MIMEMultipart object
-    msg.attach(part)
-
-    # Create SMTP session for sending the mail
-    server = smtplib.SMTP('smtp.gmail.com', 587)  # Use your SMTP server details
-    server.starttls()  # enable security
-    server.login(from_email, from_password)  # login with your email and password
-    text = msg.as_string()
-    server.sendmail(from_email, to_email, text)
-    print(f"Email sent to {to_email}")
-    server.quit()
+    except Exception as e:
+        logger.error(f"Failed to send email: {str(e)}")
+        raise
     
 
 def generate_invoice(system_size, panel_amount, panel_power, price_of_inverter,
                      brand_of_inverter, price_of_panels, netmetering_costs,
                      installation_costs, cabling_costs, structure_costs,
                      electrical_and_mechanical_costs, total_cost, customer_name, customer_address, customer_contact):
-    # Create a pdf object with modified document dimensions
-    print("Generating invoice inside function...")
+    """Generate invoice PDF with provided data."""
+    logger.info(f"Starting invoice generation for {customer_name}")
     pdf = fpdf.FPDF(format=(260, 420))
     pdf.add_page()
     # Set the font and color

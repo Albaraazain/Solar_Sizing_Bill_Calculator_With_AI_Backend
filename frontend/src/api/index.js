@@ -1,6 +1,7 @@
 // src/api/index.js
 import { billApi } from './services/billApi.js';
 import { quoteApi } from './services/quoteApi.js';
+import { equipmentApi } from './services/equipmentApi.js';
 import { ApiFactory } from './factory/ApiFactory.js';
 import { AuthMiddleware } from './middleware/authMiddleware.js';
 import { ApiErrorHandler } from './middleware/errorHandler.js';
@@ -9,6 +10,7 @@ import { API_CONFIG } from './client/apiConfig.js';
 export class Api {
     static bill = ApiFactory.createBillApi();
     static quote = ApiFactory.createQuoteApi();
+    static equipment = ApiFactory.createEquipmentApi();
     static auth = AuthMiddleware;
     static errorHandler = ApiErrorHandler;
     static config = API_CONFIG;
@@ -34,4 +36,4 @@ export class Api {
     }
 }
 // Export individual services for direct use
-export { billApi, quoteApi, AuthMiddleware, ApiErrorHandler };
+export { billApi, quoteApi, equipmentApi, AuthMiddleware, ApiErrorHandler };

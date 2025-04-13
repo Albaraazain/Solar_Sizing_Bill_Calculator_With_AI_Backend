@@ -1,10 +1,12 @@
 // src/js/components/BillReview/BillReviewPage.js
 import { Api } from "/src/api/index.js";
 import { BillPreview } from "../BillPreview.js";
-import { API_CONFIG } from '/src/api/client/apiConfig';
 import { gsap } from "gsap";
 import Chart from "chart.js/auto";
 import { CountUp } from 'countup.js';
+import { loadingManager } from "/src/core/loading/LoadingManager.js";
+import { LoadingUI } from "/src/core/loading/LoadingUI.js";
+import { QuoteValidator, QuoteDataTransformer, ValidationError } from "/src/js/utils/QuoteUtils.js";
 
 export class BillReviewPage {
     constructor() {
@@ -21,65 +23,75 @@ export class BillReviewPage {
 
     async initialize() {
         try {
-            if (!this.referenceNumber) {
-                throw new Error('No reference number available');
-            }
-            console.log('Initializing BillReview with reference number:', this.referenceNumber);
-            console.log('path for bill:', `${API_CONFIG.ENDPOINTS.BILL.GET}/${this.referenceNumber}`);
-            const response = await Api.bill.getBillDetails(this.referenceNumber);
-            console.log('Bill details:', response.data);
-            if (!response || !response.data) {
-                throw new Error('No bill data available');
+            const referenceNumber = sessionStorage.getItem('currentReferenceNumber');
+            if (!referenceNumber) {
+                window.router.push('/reference-input');
+                return false;
             }
 
-            this.billData = response.data;
+            // Load bill data
+            const response = await Api.bill.getBillDetails(referenceNumber);
+            console.log("Bill details:", response);
+
+            if (!response.success || !response.data) {
+                throw new Error("Failed to load bill details");
+            }
+
+            this.billData = {
+                ...response.data,
+                systemSize: response.data.estimatedSystemSize || 5,
+                dueDays: this.calculateDueDays(response.data),
+                billProgress: this.calculateBillProgress(response.data),
+                efficiency: this.calculateEfficiency(response.data)
+            };
+
             return true;
         } catch (error) {
-            console.error('Failed to initialize BillReview:', error);
-            window.toasts?.show('Failed to load bill data', 'error');
-            window.router.push('/');
+            console.error("Failed to initialize BillReviewPage:", error);
+            window.toasts?.show(error.message || "Failed to load bill details", "error");
+            window.router.push('/reference-input');
             return false;
         }
     }
 
+    getLoadingTemplate() {
+        return LoadingUI.createPageLoadingTemplate('Loading bill data...', 'bg-white');
+    }
+
     async render() {
+        const app = document.getElementById("app");
+        app.innerHTML = this.getLoadingTemplate();
+
         const initialized = await this.initialize();
         if (!initialized) return;
 
-        const app = document.getElementById("app");
         app.innerHTML = `
             <div class="h-screen w-full overflow-hidden bg-white transition-colors duration-1000 opacity-0" id="bill-review-page">
                 <div class="h-full w-full flex flex-col md:flex-row relative" id="main-content">
-                    <!-- Bill Preview Side -->
                     <div class="w-full md:w-1/2 h-[45vh] md:h-full overflow-hidden opacity-0" id="bill-preview-container">
                         <div id="bill-preview" class="h-full"></div>
                     </div>
 
-                    <!-- Loading Indicator -->
-                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10" id="loading-indicator">
-                        <div class="loading-spinner"></div>
-                        <p class="text-emerald-600 font-medium">Analyzing your bill...</p>
+                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10"
+                         id="loading-indicator" style="opacity: 0">
+                        ${LoadingUI.createSpinner('lg', 'primary').outerHTML}
+                        <p class="mt-3 text-emerald-600 font-medium">Analyzing your bill...</p>
                     </div>
 
-                    <!-- Insights Container -->
                     <div class="fixed md:relative w-full md:w-1/2 h-[60vh] md:h-full bg-gray-50 rounded-t-3xl md:rounded-none 
                               shadow-2xl md:shadow-none" id="insights-container" style="bottom: 0;">
-                        <!-- Drag Handle for mobile -->
                         <div class="md:hidden w-full flex justify-center py-2 drag-handle">
                             <div class="w-12 h-1.5 rounded-full bg-gray-300"></div>
                         </div>
 
                         <div class="h-full flex flex-col p-4 sm:p-6 overflow-auto hide-scrollbar">
-                            <!-- Content will be added by renderInsights() -->
                         </div>
                     </div>
                 </div>
             </div>
         `;
 
-        // Determine if the device is mobile
         const isMobile = window.innerWidth < 768;
-
         if (isMobile) {
             this.initializeMobileInteractions();
         }
@@ -91,37 +103,159 @@ export class BillReviewPage {
         });
     }
 
-    renderInsights() {
-        const insightsContainer = document.querySelector("#insights-container .hide-scrollbar");
-        if (!insightsContainer) return;
+    async startAnimation() {
+        const animationLoadingKey = 'bill_review_animation';
+        try {
+            loadingManager.startLoading(animationLoadingKey, {
+                message: 'Preparing visualization...',
+                type: 'component'
+            });
 
-        insightsContainer.innerHTML = `
-            <!-- Header Section -->
-            ${this.renderHeader()}
+            const elements = {
+                billPreviewContainer: document.getElementById("bill-preview-container"),
+                insightsContainer: document.getElementById("insights-container"),
+                loadingIndicator: document.getElementById("loading-indicator"),
+                header: document.getElementById("insights-header"),
+                progress: document.getElementById("progress-tracker"),
+                consumption: document.getElementById("consumption-card"),
+                metrics: document.querySelectorAll(".consumption-metric"),
+                nextSteps: document.getElementById("next-steps-card"),
+            };
 
-            <!-- Progress Tracker -->
-            ${this.renderProgressTracker()}
+            const isMobile = window.innerWidth < 768;
 
-            <!-- Bill Metrics -->
-            ${this.renderMetricsCards()}
+            await new Promise(resolve => {
+                // Set initial states
+                if (isMobile) {
+                    gsap.set([elements.billPreviewContainer, elements.loadingIndicator], {
+                        opacity: 0,
+                        immediateRender: true
+                    });
 
-            <!-- Consumption Chart -->
-            ${this.renderConsumptionChart()}
+                    gsap.set(elements.billPreviewContainer, { y: -20 });
+                    gsap.set(elements.insightsContainer, {
+                        y: "100%",
+                        visibility: "visible",
+                        opacity: 1
+                    });
+                } else {
+                    gsap.set(elements.billPreviewContainer, {
+                        opacity: 0,
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        xPercent: -50,
+                        yPercent: -50,
+                        width: "47.5%",
+                        scale: 0.9,
+                        zIndex: 2
+                    });
 
-            <!-- Recommendation Section -->
-            ${this.renderSolarQuoteCard()}
-        `;
+                    gsap.set(elements.insightsContainer, {
+                        opacity: 0,
+                        visibility: "hidden"
+                    });
+
+                    gsap.set(elements.loadingIndicator, {
+                        opacity: 0,
+                        scale: 0.9,
+                        zIndex: 10
+                    });
+                }
+
+                const mainTimeline = gsap.timeline({
+                    onComplete: () => {
+                        this.startCountUps();
+                        this.startInsightAnimations(elements);
+                        resolve();
+                    }
+                });
+
+                // Common initial animation
+                mainTimeline
+                    .to(elements.loadingIndicator, {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    })
+                    .to({}, { duration: 0.6 }); // Add delay for better UX
+
+                // Split animation sequences based on device type
+                if (isMobile) {
+                    mainTimeline
+                        // Fade in bill preview from top
+                        .to(elements.billPreviewContainer, {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.6,
+                            ease: "power2.out"
+                        })
+                        // Fade out loading indicator
+                        .to(elements.loadingIndicator, {
+                            opacity: 0,
+                            scale: 0.9,
+                            duration: 0.3
+                        }, "-=0.3")
+                        // Slide up insights container
+                        .to(elements.insightsContainer, {
+                            y: 0,
+                            duration: 0.6,
+                            ease: "power4.out"
+                        }, "-=0.3");
+                } else {
+                    mainTimeline
+                        // Fade in centered bill preview
+                        .to(elements.billPreviewContainer, {
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.8,
+                            ease: "power2.out"
+                        })
+                        // Fade out loading indicator
+                        .to(elements.loadingIndicator, {
+                            opacity: 0,
+                            scale: 0.8,
+                            duration: 0.3
+                        }, "-=0.4")
+                        // Move bill preview to the left
+                        .to(elements.billPreviewContainer, {
+                            left: "0%",
+                            top: "0%",
+                            xPercent: 0,
+                            yPercent: 0,
+                            width: "50%",
+                            position: "relative",
+                            duration: 0.8,
+                            ease: "power2.inOut"
+                        }, "+=0.1")
+                        // Show insights container
+                        .set(elements.insightsContainer, {
+                            visibility: "visible"
+                        })
+                        .to(elements.insightsContainer, {
+                            opacity: 1,
+                            duration: 0.5,
+                            ease: "power2.out"
+                        });
+                }
+            });
+        } catch (error) {
+            console.error("Animation error:", error);
+            window.toasts?.show("Failed to load visualizations", "error");
+        } finally {
+            loadingManager.stopLoading(animationLoadingKey);
+        }
     }
-
     renderHeader() {
         return `
             <div class="opacity-0" id="insights-header">
                 <div class="flex items-center gap-3">
                     <div class="flex-shrink-0">
-                        <div class="w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600
                                   flex items-center justify-center">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
@@ -136,7 +270,6 @@ export class BillReviewPage {
     }
 
     renderProgressTracker() {
-        const progress = 75; // You might want to calculate this based on analysis status
         return `
             <div class="bg-white/70 backdrop-blur rounded-lg shadow-sm p-3 mt-4 opacity-0" id="progress-tracker">
                 <div class="flex justify-between items-center">
@@ -170,7 +303,7 @@ export class BillReviewPage {
                     <div class="flex justify-between items-center mb-2">
                         <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
@@ -190,7 +323,7 @@ export class BillReviewPage {
                     <div class="flex justify-between items-center mb-2">
                         <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
@@ -201,9 +334,7 @@ export class BillReviewPage {
                     <p class="text-xs text-gray-500 mb-1">Units Consumed</p>
                     <p class="text-lg font-bold text-gray-900" id="units-consumed">0</p>
                     <p class="text-xs text-gray-500 mt-2">
-                        Rate: ${this.formatCurrency(
-            this.billData.ratePerUnit
-        )}/kWh
+                        Rate: ${this.formatCurrency(this.billData.ratePerUnit)}/kWh
                     </p>
                 </div>
             </div>
@@ -234,7 +365,7 @@ export class BillReviewPage {
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
                             </div>
@@ -242,20 +373,20 @@ export class BillReviewPage {
                         </div>
                         
                         <p class="text-sm text-white/90 mb-4">
-                            We've analyzed your consumption patterns and can now provide you with a personalized solar solution. 
+                            We've analyzed your consumption patterns and can now provide you with a personalized solar solution.
                             Find out how much you could save!
                         </p>
 
-                        <button 
-                            onclick="window.router.push('/quote')"
+                        <button
+                            data-action="generate-quote"
                             class="w-full bg-white hover:bg-white/90 text-emerald-700 px-5 py-2.5 rounded-xl font-medium
                                     transition-all duration-300 shadow-sm hover:shadow-md
                                     flex items-center justify-center gap-2 group"
                         >
                             <span>Generate My Quote</span>
-                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
+                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                         </button>
@@ -265,23 +396,26 @@ export class BillReviewPage {
         `;
     }
 
-    initializeComponents() {
-        if (!this.billData) {
-            console.error("No bill data available");
-            window.router.push("/");
-            return;
-        }
+    renderInsights() {
+        const insightsContainer = document.querySelector("#insights-container .hide-scrollbar");
+        if (!insightsContainer) return;
 
-        try {
-            this.renderBillPreview();
-            this.initializeCharts();
-            this.initCounters();
-            this.startAnimation().catch((error) => {
-                console.error("Animation failed:", error);
-            });
-        } catch (error) {
-            console.error("Error initializing components:", error);
-        }
+        insightsContainer.innerHTML = `
+            <!-- Header Section -->
+            ${this.renderHeader()}
+
+            <!-- Progress Tracker -->
+            ${this.renderProgressTracker()}
+
+            <!-- Bill Metrics -->
+            ${this.renderMetricsCards()}
+
+            <!-- Consumption Chart -->
+            ${this.renderConsumptionChart()}
+
+            <!-- Recommendation Section -->
+            ${this.renderSolarQuoteCard()}
+        `;
     }
 
     renderBillPreview() {
@@ -292,6 +426,33 @@ export class BillReviewPage {
         billPreview.render(billPreviewContainer);
     }
 
+    async initializeComponents() {
+        if (!this.billData) {
+            console.error("No bill data available");
+            window.router.push("/");
+            return;
+        }
+
+        const componentsLoadingKey = 'bill_review_components';
+        try {
+            loadingManager.startLoading(componentsLoadingKey, {
+                message: 'Initializing components...',
+                type: 'component'
+            });
+
+            await this.renderBillPreview();
+            await this.initializeCharts();
+            await this.initCounters();
+            this.attachEventListeners();
+            await this.startAnimation();
+        } catch (error) {
+            console.error("Error initializing components:", error);
+            window.toasts?.show('Failed to initialize components', 'error');
+        } finally {
+            loadingManager.stopLoading(componentsLoadingKey);
+        }
+    }
+
     initializeCharts() {
         const ctx = document.getElementById("consumption-trend-chart");
         if (!ctx) return;
@@ -300,31 +461,27 @@ export class BillReviewPage {
         const isMobile = window.innerWidth < 640;
         const isTablet = window.innerWidth < 1024;
 
-        // Destroy existing chart if it exists
         if (this.charts.consumption) {
             this.charts.consumption.destroy();
         }
 
-        // Create new chart with updated styling
         this.charts.consumption = new Chart(ctx, {
             type: "line",
             data: {
                 labels: trendData.map(item => item.month),
-                datasets: [
-                    {
-                        label: "Consumption (kWh)",
-                        data: trendData.map(item => item.consumption),
-                        borderColor: "#059669",
-                        backgroundColor: "rgba(5, 150, 105, 0.1)",
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: isMobile ? 2 : isTablet ? 3 : 4,
-                        pointHoverRadius: isMobile ? 4 : isTablet ? 5 : 6,
-                        pointBackgroundColor: "#ffffff",
-                        pointBorderColor: "#059669",
-                        pointBorderWidth: isMobile ? 1 : 2,
-                    },
-                ],
+                datasets: [{
+                    label: "Consumption (kWh)",
+                    data: trendData.map(item => item.consumption),
+                    borderColor: "#059669",
+                    backgroundColor: "rgba(5, 150, 105, 0.1)",
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: isMobile ? 2 : isTablet ? 3 : 4,
+                    pointHoverRadius: isMobile ? 4 : isTablet ? 5 : 6,
+                    pointBackgroundColor: "#ffffff",
+                    pointBorderColor: "#059669",
+                    pointBorderWidth: isMobile ? 1 : 2,
+                }],
             },
             options: {
                 responsive: true,
@@ -393,33 +550,14 @@ export class BillReviewPage {
 
     generateTrendData() {
         const currentMonth = new Date().getMonth();
-        const months = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        ];
-
-        // Get last 6 months including current month
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const monthlyData = [];
 
         for (let i = 5; i >= 0; i--) {
             const monthIndex = (currentMonth - i + 12) % 12;
             const month = months[monthIndex];
-
-            // Generate consumption that varies around the current consumption
-            // Add randomness but keep it realistic
             const baseConsumption = this.billData.unitsConsumed || 500;
             const variation = baseConsumption * (0.8 + Math.random() * 0.4);
-
             monthlyData.push({
                 month,
                 consumption: Math.round(variation),
@@ -446,15 +584,11 @@ export class BillReviewPage {
                 prefix: "PKR ",
                 decimalPlaces: 0,
             }),
-            unitsConsumed: new CountUp(
-                "units-consumed",
-                this.billData.unitsConsumed || 0,
-                {
-                    ...countUpOptions,
-                    suffix: " kWh",
-                    decimalPlaces: 0,
-                }
-            ),
+            unitsConsumed: new CountUp("units-consumed", this.billData.unitsConsumed || 0, {
+                ...countUpOptions,
+                suffix: " kWh",
+                decimalPlaces: 0,
+            }),
         };
     }
 
@@ -466,169 +600,105 @@ export class BillReviewPage {
         });
     }
 
-    async startAnimation() {
-        const elements = {
-            billPreviewContainer: document.getElementById("bill-preview-container"),
-            insightsContainer: document.getElementById("insights-container"),
-            loadingIndicator: document.getElementById("loading-indicator"),
-            header: document.getElementById("insights-header"),
-            progress: document.getElementById("progress-tracker"),
-            consumption: document.getElementById("consumption-card"),
-            metrics: document.querySelectorAll(".consumption-metric"),
-            nextSteps: document.getElementById("next-steps-card"),
-        };
-
-        // Detect mobile or desktop
-        const isMobile = window.innerWidth < 768;
-
-        // Reset initial states
-        gsap.set([elements.billPreviewContainer, elements.loadingIndicator], {
-            opacity: 0,
-        });
-
-        if (isMobile) {
-            // Mobile-first animation sequence
-            gsap.set(elements.billPreviewContainer, {
-                y: -20,
-            });
-
-            gsap.set(elements.insightsContainer, {
-                y: "100%",
-                visibility: "visible",
+    async startInsightAnimations(elements) {
+        gsap.fromTo(
+            elements.metrics,
+            { opacity: 0, y: 20 },
+            {
                 opacity: 1,
-            });
+                y: 0,
+                duration: 0.4,
+                stagger: 0.1,
+                ease: "power2.out"
+            }
+        );
 
-            const timeline = gsap.timeline({ defaults: { duration: 0.8, ease: "power2.out" } });
-            await timeline
-                .to(elements.billPreviewContainer, { opacity: 1, y: 0, duration: 1 })
-                .to(elements.loadingIndicator, { opacity: 1, scale: 1, duration: 0.5 })
-                .to(elements.loadingIndicator, { opacity: 0, scale: 0.5, delay: 0.5 })
-                .to(elements.insightsContainer, { y: "0%", duration: 0.8, ease: "power4.out" })
-                .add(() => {
-                    this.startInsightAnimations(elements);
-                });
-        } else {
-            // Desktop-first animation sequence
-            gsap.set(elements.billPreviewContainer, {
-                scale: 0.9,
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                xPercent: -50,
-                yPercent: -50,
-                width: "47.5%",
-            });
-
-            gsap.set(elements.insightsContainer, {
-                opacity: 0,
-                visibility: "hidden",
-            });
-
-            const timeline = gsap.timeline({ defaults: { duration: 0.8, ease: "power2.out" } });
-            await timeline
-                .to(elements.billPreviewContainer, { opacity: 1, scale: 1, duration: 1 })
-                .to(elements.loadingIndicator, { opacity: 1, scale: 1, duration: 0.5 })
-                .to(elements.loadingIndicator, { opacity: 0, scale: 0.5, delay: 1 })
-                .to(elements.billPreviewContainer, {
-                    left: "0%",
-                    top: "0%",
-                    xPercent: 0,
-                    yPercent: 0,
-                    width: "50%",
-                    position: "relative",
-                })
-                .add(() => {
-                    elements.insightsContainer.style.visibility = "visible";
-                })
-                .to(elements.insightsContainer, { opacity: 1, duration: 0.5 })
-                .add(() => {
-                    this.startInsightAnimations(elements);
-                });
-        }
-    }
-
-    startInsightAnimations(elements) {
-        const timeline = gsap.timeline({
-            defaults: { duration: 0.6, ease: "power2.out" },
-        });
-
-        timeline
-            .to(elements.header, { opacity: 1, y: 0 }) // Animate header
-            .to(elements.progress, { opacity: 1, y: 0 }, "-=0.4") // Animate progress tracker
-            .to(elements.consumption, { opacity: 1, y: 0 }, "-=0.3") // Animate consumption card
-            .to(elements.metrics, { opacity: 1, y: 0, stagger: 0.1 }, "-=0.2") // Stagger metrics animation
-            .add(() => {
-                this.startCountUps();
-            })
-            .to(elements.nextSteps, { opacity: 1, y: 0 }, "-=0.2"); // Animate next steps card
+        gsap.fromTo(
+            [elements.header, elements.progress, elements.consumption, elements.nextSteps],
+            { opacity: 0, y: 10 },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                stagger: 0.15,
+                ease: "power2.out"
+            }
+        );
     }
 
     initializeMobileInteractions() {
         const insightsContainer = document.getElementById("insights-container");
         if (!insightsContainer) return;
 
-        let startY = 0;
-        let currentHeight = 0;
         const initialHeight = "60vh";
         const expandedHeight = "92vh";
+        let startY = 0;
+        let currentHeight = 0;
 
-        // Handle touch start
-        const handleTouchStart = (e) => {
-            startY = e.touches[0].clientY;
-            currentHeight = insightsContainer.getBoundingClientRect().height;
+        const handleGestures = {
+            touchStart: (e) => {
+                startY = e.touches[0].clientY;
+                currentHeight = insightsContainer.getBoundingClientRect().height;
+            },
+            touchMove: (e) => {
+                const deltaY = startY - e.touches[0].clientY;
+                const newHeight = Math.max(
+                    Math.min(currentHeight + deltaY, window.innerHeight * 0.92),
+                    window.innerHeight * 0.3
+                );
+                gsap.set(insightsContainer, { height: newHeight, duration: 0 });
+            },
+            touchEnd: () => {
+                const finalHeight = insightsContainer.getBoundingClientRect().height;
+                const threshold = window.innerHeight * 0.6;
+                gsap.to(insightsContainer, {
+                    height: finalHeight > threshold ? expandedHeight : initialHeight,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            }
         };
 
-        // Handle touch move
-        const handleTouchMove = (e) => {
-            const deltaY = startY - e.touches[0].clientY;
-            const newHeight = Math.max(
-                Math.min(currentHeight + deltaY, window.innerHeight * 0.92),
-                window.innerHeight * 0.3
-            );
-
-            gsap.set(insightsContainer, { height: newHeight, duration: 0 });
-        };
-
-        // Handle touch end
-        const handleTouchEnd = () => {
-            const finalHeight = insightsContainer.getBoundingClientRect().height;
-            const threshold = window.innerHeight * 0.6;
-
-            gsap.to(insightsContainer, {
-                height: finalHeight > threshold ? expandedHeight : initialHeight,
-                duration: 0.3,
-                ease: "power2.out",
-            });
-        };
-
-        // Add touch event listeners to the drag handle
         const dragHandle = insightsContainer.querySelector(".drag-handle");
         if (dragHandle) {
-            dragHandle.addEventListener("touchstart", handleTouchStart, { passive: true });
-            dragHandle.addEventListener("touchmove", handleTouchMove, { passive: true });
-            dragHandle.addEventListener("touchend", handleTouchEnd);
+            dragHandle.addEventListener("touchstart", handleGestures.touchStart, { passive: true });
+            dragHandle.addEventListener("touchmove", handleGestures.touchMove, { passive: true });
+            dragHandle.addEventListener("touchend", handleGestures.touchEnd);
+            this.mobileInteractionHandlers = handleGestures;
+            this.dragHandle = dragHandle;
         }
     }
 
-    calculateDueDays() {
-        if (!this.billData.dueDate) return 0;
-        const dueDate = new Date(this.billData.dueDate);
+    calculateDueDays(data) {
+        // Use passed data parameter if available, otherwise use this.billData
+        const billData = data || this.billData;
+        if (!billData || !billData.dueDate) return 0;
+        
+        const dueDate = new Date(billData.dueDate);
         const today = new Date();
         const diffTime = Math.abs(dueDate - today);
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    calculateBillProgress() {
+    calculateBillProgress(data) {
+        // Use passed data parameter if available, otherwise use this.billData
+        const billData = data || this.billData;
+        if (!billData) return 0;
+        
         const daysInMonth = 30;
         const today = new Date();
-        const billDate = new Date(this.billData.issueDate || today);
+        const billDate = new Date(billData.issueDate || today);
         const daysPassed = Math.ceil((today - billDate) / (1000 * 60 * 60 * 24));
         return Math.min((daysPassed / daysInMonth) * 100, 100);
     }
 
-    calculateEfficiency() {
-        const avgConsumption = 500; // Example average consumption
-        return this.billData.unitsConsumed <= avgConsumption ? "High" : "Low";
+    calculateEfficiency(data) {
+        // Use passed data parameter if available, otherwise use this.billData
+        const billData = data || this.billData;
+        if (!billData) return "Medium";
+        
+        const avgConsumption = 500;
+        return billData.unitsConsumed <= avgConsumption ? "High" : "Low";
     }
 
     formatCurrency(value) {
@@ -636,7 +706,7 @@ export class BillReviewPage {
             style: "currency",
             currency: "PKR",
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 0
         }).format(value);
     }
 
@@ -644,10 +714,7 @@ export class BillReviewPage {
         const trendData = this.generateTrendData();
         if (!Array.isArray(trendData)) return "0.0";
         const lastTwo = trendData.slice(-2);
-        const change =
-            ((lastTwo[1].consumption - lastTwo[0].consumption) /
-                lastTwo[0].consumption) *
-            100;
+        const change = ((lastTwo[1].consumption - lastTwo[0].consumption) / lastTwo[0].consumption) * 100;
         return change.toFixed(1);
     }
 
@@ -660,6 +727,89 @@ export class BillReviewPage {
         }, 250);
     }
 
+    async generateQuote() {
+        const loadingKey = 'generate_quote';
+        try {
+            await loadingManager.startLoading(loadingKey, {
+                message: 'Generating quote...',
+                type: 'component'
+            });
+
+            // Transform data using utility
+            const quoteData = QuoteDataTransformer.formatBillDataForQuote(
+                this.billData,
+                this.referenceNumber
+            );
+
+            // Validate transformed data
+            const validation = QuoteValidator.validateBillData(quoteData);
+            if (!validation.isValid) {
+                throw new ValidationError(
+                    `Missing required fields: ${validation.errors.join(', ')}`
+                );
+            }
+
+            // Store transformed data for recovery
+            sessionStorage.setItem('quoteGenerationData', JSON.stringify(quoteData));
+            
+            // Generate quote
+            const response = await Api.quote.generateQuote(quoteData);
+            
+            // Validate response using utility
+            if (!QuoteValidator.isValidQuoteResponse(response)) {
+                throw new Error('Invalid or incomplete quote response from server');
+            }
+
+            // Store quote ID for recovery
+            sessionStorage.setItem('lastQuoteId', response.data.quoteId);
+
+            return response;
+        } catch (error) {
+            console.error('Error generating quote:', error);
+            if (error instanceof ValidationError) {
+                window.toasts?.show(error.message, 'error');
+            } else {
+                window.toasts?.show(
+                    'Failed to generate quote. Please verify your bill details.',
+                    'error'
+                );
+            }
+            throw error;
+        } finally {
+            try {
+                await loadingManager.stopLoading(loadingKey);
+            } catch (error) {
+                console.error('Error stopping loading:', error);
+            }
+        }
+    }
+
+    attachEventListeners() {
+        const generateQuoteBtn = document.querySelector('[data-action="generate-quote"]');
+        if (generateQuoteBtn) {
+            generateQuoteBtn.addEventListener('click', async () => {
+                try {
+                    const response = await this.generateQuote();
+                    window.router.push(`/quote?id=${response.data.quoteId}`);
+                } catch (error) {
+                    // Error already handled in generateQuote
+                }
+            });
+        }
+    }
+
+    cleanup() {
+        window.removeEventListener("resize", this.handleResize);
+        if (this.charts.consumption) {
+            this.charts.consumption.destroy();
+        }
+        Object.values(this.countUps).forEach(counter => {
+            if (counter) counter.reset();
+        });
+        gsap.killTweensOf("*");
+        sessionStorage.removeItem('currentReferenceNumber');
+    }
+
     attachStyles() {
         const style = document.createElement('style');
         style.textContent = `
@@ -667,48 +817,28 @@ export class BillReviewPage {
                 opacity: 1 !important;
                 visibility: visible !important;
             }
-    
             .hide-scrollbar::-webkit-scrollbar {
                 display: none;
             }
-    
             .hide-scrollbar {
                 -ms-overflow-style: none;
                 scrollbar-width: none;
             }
-    
-            .loading-spinner {
-                width: 40px;
-                height: 40px;
-                border: 3px solid rgba(16, 185, 129, 0.1);
-                border-radius: 50%;
-                border-top-color: #10b981;
-                animation: spin 1s ease-in-out infinite;
-            }
-    
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-    
             .drag-handle {
                 cursor: grab;
                 touch-action: none;
             }
-    
             .drag-handle:active {
                 cursor: grabbing;
             }
-    
             #insights-container {
                 transition: height 0.3s ease;
             }
-
             .fade-in {
                 opacity: 0;
                 transform: translateY(10px);
                 transition: opacity 0.3s ease, transform 0.3s ease;
             }
-    
             .fade-in.visible {
                 opacity: 1;
                 transform: translateY(0);
@@ -716,23 +846,4 @@ export class BillReviewPage {
         `;
         document.head.appendChild(style);
     }
-
-    cleanup() {
-        window.removeEventListener("resize", this.handleResize);
-
-        if (this.charts.consumption) {
-            this.charts.consumption.destroy();
-        }
-
-        Object.values(this.countUps).forEach(counter => {
-            if (counter) counter.reset();
-        });
-
-        gsap.killTweensOf("*");
-
-        // Clear the reference number when leaving
-        sessionStorage.removeItem('currentReferenceNumber');
-    }
 }
-
-export default BillReviewPage;
