@@ -291,7 +291,7 @@ def generate_invoice(system_size, panel_amount, panel_power, price_of_inverter,
     pdf.set_fill_color(0, 128, 0)
     pdf.set_font("Arial", size=15)
     pdf.cell(205, 20, txt=f"Total System Cost:",border=1, ln=0, align="C", fill=True)
-    pdf.cell(35, 20, txt=f"{int(total_cost)}", border=1, ln=1, align="C", fill=True)
+    pdf.cell(35, 20, txt=f"{int(float(total_cost))}", border=1, ln=1, align="C", fill=True)
     pdf.cell(205, 20, txt=f"90% Advance Payment and 10% after testing commissioning:", border=1, ln=0, align="C", fill=True)
     pdf.cell(35, 20, txt=f"{int(advance_payment)}", border=1, ln=1, align="C", fill=True)
 
@@ -362,4 +362,4 @@ def generate_invoice(system_size, panel_amount, panel_power, price_of_inverter,
     send_email_with_attachment(subject, body, to_email, output_file_path)
 
     # Open the final PDF file
-    
+    return output_file_path

@@ -3,6 +3,7 @@ from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from .views.frontend_views import SPAView
 from .views import control_views
+from solar.views.control_views import calculate_quote, generate_quote_pdf
 
 
 # Main URL patterns
@@ -18,6 +19,8 @@ urlpatterns = [
     path('api/set-default-panel/<int:panel_id>/', control_views.set_default_panel, name='set_default_panel'),
     # API routes
     path('api/', include('solar.api_urls')),
+    path('api/calculate-quote/', calculate_quote, name='calculate_quote'),
+    path('api/generate-quote-pdf/', generate_quote_pdf, name='generate_quote_pdf'),
     
     # Serve frontend
     path('', SPAView.as_view(), name='spa'),

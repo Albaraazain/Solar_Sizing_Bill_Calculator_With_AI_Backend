@@ -7,119 +7,567 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solar Application Control Panel</title>
     <link rel="stylesheet" href="{% static 'solar/css/control.css' %}">
+    <style>
+        .page-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+        
+        .left-section, .right-section {
+            flex: 1;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 
 <body>
     {% csrf_token %}
     <div class="container">
         <h1>Solar Application Control Panel</h1>
-        <div class="section panel-section">
-            <h2>Solar Panels</h2>
-            <button onclick="fetchPanels()">View Panels</button>
-            <button onclick="showAddPanelForm()">Add New Panel</button>
-            <div id="panel-list"></div>
-            <div id="add-panel-form" style="display: none;">
-                <h3>Add New Panel</h3>
-                <input type="text" id="panel-brand" placeholder="Brand">
-                <input type="number" id="panel-price" placeholder="Price per Watt">
-                <input type="number" id="panel-power" placeholder="Power">
-                <button onclick="addPanel()">Add Panel</button>
-            </div>
-            <div id="edit-panel-form" style="display: none;">
-                <h3>Edit Panel</h3>
-                <input type="hidden" id="edit-panel-id">
-                <input type="text" id="edit-panel-brand" placeholder="Brand">
-                <input type="number" id="edit-panel-price" placeholder="Price per Watt">
-                <input type="number" id="edit-panel-power" placeholder="Power">
-                <button onclick="updatePanel()">Update Panel</button>
-            </div>
-        </div>
-        <div class="section inverter-section">
-            <h2>Inverters</h2>
-            <button onclick="fetchInverters()">View Inverters</button>
-            <button onclick="showAddInverterForm()">Add New Inverter</button>
-            <div id="inverter-list"></div>
-            <div id="add-inverter-form" style="display: none;">
-                <h3>Add New Inverter</h3>
-                <input type="text" id="inverter-brand" placeholder="Brand">
-                <input type="number" id="inverter-price" placeholder="Price">
-                <input type="number" id="inverter-power" placeholder="Power">
-                <button onclick="addInverter()">Add Inverter</button>
-            </div>
-            <div id="edit-inverter-form" style="display: none;">
-                <h3>Edit Inverter</h3>
-                <input type="hidden" id="edit-inverter-id">
-                <input type="text" id="edit-inverter-brand" placeholder="Brand">
-                <input type="number" id="edit-inverter-price" placeholder="Price">
-                <input type="number" id="edit-inverter-power" placeholder="Power">
-                <button onclick="updateInverter()">Update Inverter</button>
-            </div>
-        </div>
-        <div class="section customer-section">
-            <h2>Potential Customers</h2>
-            <button onclick="fetchCustomers()">View Customers</button>
-            <div id="customer-list"></div>
-        </div>
-        <div class="section cost-section">
-            <h2>Set Prices</h2>
-            <div class="price-container">
-                <label for="custom-cost">Frame Cost per Watt (Custom)</label>
-                <input type="number" id="custom-cost" placeholder="Frame Cost per Watt (Custom)"><br>
-            </div>
+        
+        <div class="page-container">
+            <!-- Left Section - Admin Controls -->
+            <div class="left-section">
+                <div class="section panel-section">
+                    <h2>Solar Panels</h2>
+                    <button onclick="fetchPanels()">View Panels</button>
+                    <button onclick="showAddPanelForm()">Add New Panel</button>
+                    <div id="panel-list"></div>
+                    <div id="add-panel-form" style="display: none;">
+                        <h3>Add New Panel</h3>
+                        <input type="text" id="panel-brand" placeholder="Brand">
+                        <input type="number" id="panel-price" placeholder="Price per Watt">
+                        <input type="number" id="panel-power" placeholder="Power">
+                        <button onclick="addPanel()">Add Panel</button>
+                    </div>
+                    <div id="edit-panel-form" style="display: none;">
+                        <h3>Edit Panel</h3>
+                        <input type="hidden" id="edit-panel-id">
+                        <input type="text" id="edit-panel-brand" placeholder="Brand">
+                        <input type="number" id="edit-panel-price" placeholder="Price per Watt">
+                        <input type="number" id="edit-panel-power" placeholder="Power">
+                        <button onclick="updatePanel()">Update Panel</button>
+                    </div>
+                </div>
+                <div class="section inverter-section">
+                    <h2>Inverters</h2>
+                    <button id="view-inverters-button">View Inverters</button>
+                    <button onclick="showAddInverterForm()">Add New Inverter</button>        
+                    <div id="inverter-list"></div>
+                    <div id="add-inverter-form" style="display: none;">
+                        <h3>Add New Inverter</h3>
+                        <input type="text" id="inverter-brand" placeholder="Brand">
+                        <input type="number" id="inverter-price" placeholder="Price">
+                        <input type="number" id="inverter-power" placeholder="Power">
+                        <button onclick="addInverter()">Add Inverter</button>
+                    </div>
+                    <div id="edit-inverter-form" style="display: none;">
+                        <h3>Edit Inverter</h3>
+                        <input type="hidden" id="edit-inverter-id">
+                        <input type="text" id="edit-inverter-brand" placeholder="Brand">
+                        <input type="number" id="edit-inverter-price" placeholder="Price">
+                        <input type="number" id="edit-inverter-power" placeholder="Power">
+                        <button onclick="updateInverter()">Update Inverter</button>
+                    </div>
+                </div>
+                <div class="section customer-section">
+                    <h2>Potential Customers</h2>
+                    <button onclick="fetchCustomers()">View Customers</button>
+                    <div id="customer-list"></div>
+                </div>
+                <div class="section cost-section">
+                    <h2>Set Prices</h2>
+                    <div class="price-container">
+                        <label for="custom-cost">Frame Cost per Watt (Custom)</label>
+                        <input type="number" id="custom-cost" placeholder="Frame Cost per Watt (Custom)"><br>
+                    </div>
 
-            <div class="price-container">
-                <label for="abs-cost">Frame Cost per Watt (Absolute)</label>
-                <input type="number" id="abs-cost" placeholder="Frame Cost per Watt (Absolute)"><br>
+                    <div class="price-container">
+                        <label for="abs-cost">Frame Cost per Watt (Absolute)</label>
+                        <input type="number" id="abs-cost" placeholder="Frame Cost per Watt (Absolute)"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="installation-cost">Installation Cost per Watt</label>
+                        <input type="number" id="installation-cost" placeholder="Installation Cost per Watt"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="dc-cable-cost">DC Cable Roll</label>
+                        <input type="number" id="dc-cable-cost" placeholder="DC Cable Roll Cost"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="ac-cable-cost">AC Cable</label>
+                        <input type="number" id="ac-cable-cost" placeholder="AC Cable Cost"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="transport-cost">Transport Cost</label>
+                        <input type="number" id="transport-cost" placeholder="Transport Cost"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="accessories-cost">Accessories</label>
+                        <input type="number" id="accessories-cost" placeholder="Accessories Cost"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="labor-cost">Labor Cost</label>
+                        <input type="number" id="labor-cost" placeholder="Labor Cost"><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="l2-select">Use L2 (Absolute)?</label>
+                        <select id="l2-select">
+                            <option value="True">True (Absolute)</option>
+                            <option value="False">False (Custom)</option>
+                        </select><br>
+                    </div>
+
+                    <div class="price-container">
+                        <label for="net-metering">Net Metering</label>
+                        <input type="number" id="net-metering" placeholder="Net Metering"><br>
+                    </div>
+
+                    <button onclick="setPrices()">Set Prices</button>
+                </div>
             </div>
-
-            <div class="price-container">
-                <label for="installation-cost">Installation Cost per Watt</label>
-                <input type="number" id="installation-cost" placeholder="Installation Cost per Watt"><br>
+            
+            <!-- Right Section - Quote Generation -->
+            <div class="right-section">
+                <div class="section quote-section">
+                    <h2>Quote Generation</h2>
+                    <div class="form-group">
+                        <label for="customer-name">Customer Name:</label>
+                        <input type="text" id="customer-name" placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-address">Customer Address:</label>
+                        <input type="text" id="customer-address" placeholder="Enter customer address">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-whatsapp">Customer WhatsApp Number:</label>
+                        <input type="text" id="customer-whatsapp" placeholder="Enter WhatsApp number">
+                    </div>
+                    <div class="form-group">
+                        <label for="system-size">System Size (kW):</label>
+                        <input type="number" id="system-size" placeholder="Enter system size" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="l2">Use L2 (Absolute)?</label>
+                        <select id="l2">
+                            <option value="True">True (Absolute)</option>
+                            <option value="False">False (Custom)</option>
+                        </select><br>
+                    </div>
+                    <div class="form-group">
+                        <label for="inverter-select">Select Inverter:</label>
+                        <select id="inverter-select">
+                            <option value="">-- Select an inverter --</option>
+                            <!-- Will be populated with fetchInverters() function -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="panel-select">Select Panel:</label>
+                        <select id="panel-select">
+                            <option value="">-- Select a panel --</option>
+                            <!-- Will be populated with fetchPanels() function -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-frame-cost">Frame Cost (Per watt for custom / Per 2 panels for absolute):</label>
+                        <input type="text" id="quote-frame-cost" placeholder="Per watt for custom / Per 2 panels for absolute">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-installation-cost">Installation Cost (Per watt):</label>
+                        <input type="number" id="quote-installation-cost" placeholder="Enter installation cost per watt">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-transportation-cost">Transportation Cost:</label>
+                        <input type="number" id="quote-transportation-cost" placeholder="Enter transportation cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-dc-cable-cost">DC Cable Cost:</label>
+                        <input type="number" id="quote-dc-cable-cost" placeholder="Enter DC cable cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-ac-cable-cost">AC Cable Cost:</label>
+                        <input type="number" id="quote-ac-cable-cost" placeholder="Enter AC cable cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-accessories-cost">Accessories Cost:</label>
+                        <input type="number" id="quote-accessories-cost" placeholder="Enter accessories cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-labor-cost">Labor Cost:</label>
+                        <input type="number" id="quote-labor-cost" placeholder="Enter labor cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-net-metering-cost">Net Metering Cost:</label>
+                        <input type="number" id="quote-net-metering-cost" placeholder="Enter net metering cost">
+                    </div>
+                    <button onclick="openQuoteReview()">Review Quotation</button>
+                </div>
             </div>
-
-            <div class="price-container">
-                <label for="dc-cable-cost">DC Cable Roll</label>
-                <input type="number" id="dc-cable-cost" placeholder="DC Cable Roll Cost"><br>
-            </div>
-
-            <div class="price-container">
-                <label for="ac-cable-cost">AC Cable</label>
-                <input type="number" id="ac-cable-cost" placeholder="AC Cable Cost"><br>
-            </div>
-
-            <div class="price-container">
-                <label for="transport-cost">Transport Cost</label>
-                <input type="number" id="transport-cost" placeholder="Transport Cost"><br>
-            </div>
-
-            <div class="price-container">
-                <label for="accessories-cost">Accessories</label>
-                <input type="number" id="accessories-cost" placeholder="Accessories Cost"><br>
-            </div>
-
-            <div class="price-container">
-                <label for="labor-cost">Labor Cost</label>
-                <input type="number" id="labor-cost" placeholder="Labor Cost"><br>
-            </div>
-
-            <div class="price-container">
-                <label for="l2-select">Use L2 (Custom)?</label>
-                <select id="l2-select">
-                    <option value="True">True (Custom)</option>
-                    <option value="False">False (Absolute)</option>
-                </select><br>
-            </div>
-
-            <div class="price-container">
-                <label for="net-metering">Net Metering</label>
-                <input type="number" id="net-metering" placeholder="Net Metering"><br>
-            </div>
-
-            <button onclick="setPrices()">Set Prices</button>
-
         </div>
     </div>
+
+    <!-- Quotation Review Modal -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeQuoteReview()">&times;</span>
+            <h2>Quote Review</h2>
+            <div id="quote-details">
+                <!-- Quote details will be populated here -->
+            </div>
+            <button onclick="generateQuotePDF()">Generate PDF Quote</button>
+        </div>
+    </div>
+
     <script src="{% static 'solar/js/control.js' %}"></script>
+    <script>
+        // Functions for quote generation
+        function openQuoteReview() {
+            const customerName = document.getElementById('customer-name').value;
+            const customerAddress = document.getElementById('customer-address').value;
+            const customerWhatsapp = document.getElementById('customer-whatsapp').value;
+            const systemSize = document.getElementById('system-size').value;
+            const inverterSelect = document.getElementById('inverter-select');
+            const selectedInverterId = inverterSelect.value;
+            const panelSelect = document.getElementById('panel-select');
+            const selectedPanelId = panelSelect.value;
+            const l2 = document.getElementById('l2');
+            const l2Value = l2.options[l2.selectedIndex].value;
+
+            const frameCost = document.getElementById('quote-frame-cost').value;
+            const installationCost = document.getElementById('quote-installation-cost').value;
+            const transportationCost = document.getElementById('quote-transportation-cost').value;
+            const dcCableCost = document.getElementById('quote-dc-cable-cost').value;
+            const acCableCost = document.getElementById('quote-ac-cable-cost').value;
+            const accessoriesCost = document.getElementById('quote-accessories-cost').value;
+            const laborCost = document.getElementById('quote-labor-cost').value;
+            const netMeteringCost = document.getElementById('quote-net-metering-cost').value;
+
+            console.log('Selected Inverter ID:', selectedInverterId);
+            console.log('Selected Panel ID:', selectedPanelId);
+            console.log('System Size:', systemSize);
+            
+            if (!systemSize || !selectedInverterId) {
+                alert('Please provide system size and select an inverter.');
+                return;
+            }
+
+            const requestData = {
+                system_size: systemSize,
+                inverter_id: selectedInverterId,
+                panel_id: selectedPanelId, // Add panel ID to the request
+                l2: l2Value,
+                frame_cost: frameCost,
+                installation_cost: installationCost,
+                transportation_cost: transportationCost,
+                dc_cable_cost: dcCableCost,
+                ac_cable_cost: acCableCost,
+                accessories_cost: accessoriesCost,
+                labor_cost: laborCost,
+                net_metering_cost: netMeteringCost
+            };
+
+            fetch('/api/calculate-quote/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const quoteDetails = document.getElementById('quote-details');
+                quoteDetails.innerHTML = `
+                    <div class="form-group">
+                        <label for="modal-customer-name"><strong>Customer:</strong></label>
+                        <input type="text" id="modal-customer-name" value="${customerName}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-customer-address"><strong>Address:</strong></label>
+                        <input type="text" id="modal-customer-address" value="${customerAddress}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-customer-whatsapp"><strong>WhatsApp:</strong></label>
+                        <input type="text" id="modal-customer-whatsapp" value="${customerWhatsapp}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-system-size"><strong>System Size (kW):</strong></label>
+                        <input type="number" id="modal-system-size" value="${systemSize}" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-num-panels"><strong>Number of Panels:</strong></label>
+                        <input type="number" id="modal-num-panels" value="${data.num_panels}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-panel-brand"><strong>Panel Brand:</strong></label>
+                        <input type="text" id="modal-panel-brand" value="${data.panel_brand}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-panel-power"><strong>Panel Power (W):</strong></label>
+                        <input type="number" id="modal-panel-power" value="${data.panel_power}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-inverter-power"><strong>Wattage of Inverter (kW):</strong></label>
+                        <input type="number" id="modal-inverter-power" value="${data.inverter_power}" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-inverter-brand"><strong>Inverter Brand:</strong></label>
+                        <input type="text" id="modal-inverter-brand" value="${data.inverter_brand}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-panel-cost"><strong>Panel Cost (PKR):</strong></label>
+                        <input type="number" id="modal-panel-cost" value="${data.panel_cost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-inverter-cost"><strong>Inverter Cost (PKR):</strong></label>
+                        <input type="number" id="modal-inverter-cost" value="${data.inverter_cost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-installation-cost"><strong>Installation Cost (PKR):</strong></label>
+                        <input type="number" id="modal-installation-cost" value="${installationCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-transportation-cost"><strong>Transportation Cost (PKR):</strong></label>
+                        <input type="number" id="modal-transportation-cost" value="${transportationCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-dc-cable-cost"><strong>DC Cable Cost (PKR):</strong></label>
+                        <input type="number" id="modal-dc-cable-cost" value="${dcCableCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-ac-cable-cost"><strong>AC Cable Cost (PKR):</strong></label>
+                        <input type="number" id="modal-ac-cable-cost" value="${acCableCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-accessories-cost"><strong>Accessories Cost (PKR):</strong></label>
+                        <input type="number" id="modal-accessories-cost" value="${accessoriesCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-labor-cost"><strong>Labor Cost (PKR):</strong></label>
+                        <input type="number" id="modal-labor-cost" value="${laborCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-net-metering-cost"><strong>Net Metering Cost (PKR):</strong></label>
+                        <input type="number" id="modal-net-metering-cost" value="${netMeteringCost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-frame-cost"><strong>Total Frame Cost (PKR):</strong></label>
+                        <input type="number" id="modal-frame-cost" value="${data.total_frame_cost}">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-total-cost"><strong>Total Cost (PKR):</strong></label>
+                        <input type="number" id="modal-total-cost" value="${data.total_cost}">
+                    </div>
+                `;
+                document.getElementById('quoteModal').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while fetching the quote.');
+            });
+        }
+        
+        function closeQuoteReview() {
+            document.getElementById('quoteModal').style.display = 'none';
+        }
+        
+        function generateQuotePDF() {
+            // Get all the values from the editable fields in the modal
+            const customerName = document.getElementById('modal-customer-name').value;
+            const customerAddress = document.getElementById('modal-customer-address').value;
+            const customerWhatsapp = document.getElementById('modal-customer-whatsapp').value;
+            const systemSize = document.getElementById('modal-system-size').value;
+            const numPanels = document.getElementById('modal-num-panels').value;
+            const panelBrand = document.getElementById('modal-panel-brand').value;
+            const panelPower = document.getElementById('modal-panel-power').value;
+            const inverterPower = document.getElementById('modal-inverter-power').value;
+            const inverterBrand = document.getElementById('modal-inverter-brand').value;
+            const panelCost = document.getElementById('modal-panel-cost').value;
+            const inverterCost = document.getElementById('modal-inverter-cost').value;
+            const installationCost = document.getElementById('modal-installation-cost').value;
+            const transportationCost = document.getElementById('modal-transportation-cost').value;
+            const dcCableCost = document.getElementById('modal-dc-cable-cost').value;
+            const acCableCost = document.getElementById('modal-ac-cable-cost').value;
+            const accessoriesCost = document.getElementById('modal-accessories-cost').value;
+            const laborCost = document.getElementById('modal-labor-cost').value;
+            const netMeteringCost = document.getElementById('modal-net-metering-cost').value;
+            const frameCost = document.getElementById('modal-frame-cost').value;
+            const totalCost = document.getElementById('modal-total-cost').value;
+            
+            // Log all the values for debugging
+            console.log('Quote Data for PDF Generation:');
+            console.log('Customer:', customerName);
+            console.log('Address:', customerAddress);
+            console.log('WhatsApp:', customerWhatsapp);
+            console.log('System Size (kW):', systemSize);
+            console.log('Number of Panels:', numPanels);
+            console.log('Panel Brand:', panelBrand);
+            console.log('Panel Power (W):', panelPower);
+            console.log('Panel Cost (PKR):', panelCost);
+            console.log('Inverter Power (kW):', inverterPower);
+            console.log('Inverter Brand:', inverterBrand);
+            console.log('Inverter Cost (PKR):', inverterCost);
+            console.log('Installation Cost (PKR):', installationCost);
+            console.log('Transportation Cost (PKR):', transportationCost);
+            console.log('DC Cable Cost (PKR):', dcCableCost);
+            console.log('AC Cable Cost (PKR):', acCableCost);
+            console.log('Accessories Cost (PKR):', accessoriesCost);
+            console.log('Labor Cost (PKR):', laborCost);
+            console.log('Net Metering Cost (PKR):', netMeteringCost);
+            console.log('Frame Cost (PKR):', frameCost);
+            console.log('Total Cost (PKR):', totalCost);
+            
+            // Create the data object to send to the backend
+            const quoteData = {
+                customer_name: customerName,
+                customer_address: customerAddress,
+                customer_whatsapp: customerWhatsapp,
+                system_size: systemSize,
+                num_panels: numPanels,
+                panel_brand: panelBrand,
+                panel_power: panelPower,
+                panel_cost: panelCost,
+                inverter_power: inverterPower,
+                inverter_brand: inverterBrand,
+                inverter_cost: inverterCost,
+                installation_cost: installationCost,
+                transportation_cost: transportationCost,
+                dc_cable_cost: dcCableCost,
+                ac_cable_cost: acCableCost,
+                accessories_cost: accessoriesCost,
+                labor_cost: laborCost,
+                net_metering_cost: netMeteringCost,
+                frame_cost: frameCost,
+                total_cost: totalCost
+            };
+
+            // Send the data to the backend for PDF generation
+            fetch('/api/generate-quote-pdf/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(quoteData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('PDF generation failed');
+            })
+            .then(blob => {
+                // Create a download link for the PDF
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Quote_${customerName}_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('PDF quote generated successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while generating the PDF quote.');
+            });
+        }
+        
+        // Update fetchInverters function to also populate the dropdown
+        const originalFetchInverters = window.fetchInverters || function(){};
+        window.fetchInverters = function() {
+            originalFetchInverters();
+            
+            // Get existing inverters and populate dropdown
+            fetch('/api/inverters/')
+                .then(response => response.json())
+                .then(data => {
+                    const inverterSelect = document.getElementById('inverter-select');
+                    // Clear existing options except first
+                    while (inverterSelect.options.length > 1) {
+                        inverterSelect.remove(1);
+                    }
+                    console.log('Inverter IDs:', data.map(inverter => inverter.id));
+                    // Add new options
+                    data.forEach(inverter => {
+                        const option = document.createElement('option');
+                        option.value = inverter.id;
+                        option.text = `${inverter.brand} - ${inverter.power} kW`;
+                        inverterSelect.appendChild(option);
+                    });
+                })
+                
+                .catch(error => console.error('Error fetching inverters:', error));
+        };
+        
+        // Call fetchInverters on page load to populate dropdown only (not to show all inverters)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the dropdown without showing the list
+            window.fetchInverters();
+            // Ensure the inverter list is hidden
+            const inverterList = document.getElementById('inverter-list');
+            if (inverterList) {
+                inverterList.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -48,6 +48,7 @@ def get_bill_info(reference_number):
 
         bill_info = {
             'Name': extract_name(driver),
+            'Address': extract_address(driver),
             'Payable Within Due Date': extract_payable_within_due_date(driver),
             'Units Consumed': extract_units_consumed(driver),
             'Issue Date': extract_issue_date(driver),
@@ -82,6 +83,17 @@ def extract_name(driver):
         return name
     except Exception as e:
         print(f"Error extracting name: {e}")
+        return "Not found"
+    
+def extract_address(driver):
+    try:
+        address_section1 = driver.find_element(By.XPATH, "//span[contains(text(), 'NAME & ADDRESS')]/following-sibling::span[3]")
+        address_section2 = driver.find_element(By.XPATH, "//span[contains(text(), 'NAME & ADDRESS')]/following-sibling::span[4]")
+        address = address_section1.text.strip() + " " + address_section2.text.strip()
+        address = address.replace("\n", " ")
+        return address
+    except Exception as e:
+        print(f"Error extracting address: {e}")
         return "Not found"
 
 def extract_payable_within_due_date(driver):
@@ -194,5 +206,5 @@ def bill_reader(reference_number):
     # create_invoice_from_bill_info(bill_info)
 
 if __name__ == '__main__':
-    reference_number = '04151722337382'  # Replace with the actual reference number
+    reference_number = '04151722337322'  # Replace with the actual reference number
     bill_reader(reference_number)

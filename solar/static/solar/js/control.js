@@ -33,8 +33,32 @@ function fetchPanels() {
                 `;
             });
         });
+    fetchPanelsForDropdown();
 }
 
+function fetchPanelsForDropdown() {
+    // Get existing panels and populate dropdown
+    fetch('/api/panels/')
+        .then(response => response.json())
+        .then(data => {
+            const panelSelect = document.getElementById('panel-select');
+            // Clear existing options except first
+            while (panelSelect.options.length > 1) {
+                panelSelect.remove(1);
+            }
+            // Add new options
+            data.forEach(panel => {
+                const option = document.createElement('option');
+                option.value = panel.id;
+                option.text = `${panel.brand} - ${panel.power} W`;
+                if (panel.default_choice) {
+                    option.selected = true;
+                }
+                panelSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching panels for dropdown:', error));
+}
 
 function setDefaultPanel(panelId) {
     fetch(`/api/set-default-panel/${panelId}/`, {
@@ -64,7 +88,7 @@ function fetchInverters() {
             inverterList.innerHTML = '';
             data.forEach(inverter => {
                 inverterList.innerHTML += `
-                    <div>
+                    <div id="inverter-${inverter.id}">
                         ${inverter.brand} - PKR ${inverter.price} - ${inverter.power} kW
                         <button onclick="showEditInverterForm(${inverter.id}, '${inverter.brand}', ${inverter.price}, ${inverter.power})">Edit</button>
                         <button onclick="deleteInverter(${inverter.id})">Delete</button>
@@ -73,6 +97,11 @@ function fetchInverters() {
             });
         });
 }
+
+document.getElementById('view-inverters-button').addEventListener('click', function() {
+    fetchInverters();
+    document.getElementById('inverter-list').style.display = 'block';
+});
 
 function fetchCustomers() {
     fetch('/api/customers/')
@@ -265,8 +294,45 @@ function setPrices() {
     });
 }
 
+function populateQuoteFields() {
+    // Get prices from the API and populate the quote section fields
+    fetch('/api/get-prices/')
+        .then(response => response.json())
+        .then(data => {
+            // Populate Quote Generation fields with values from global settings
+            // Use the l2 value to determine which frame cost to use
+            const l2Value = document.getElementById('l2').value === 'True';
+            if (l2Value) {
+                document.getElementById('quote-frame-cost').value = data.abs_frame_cost_per_watt || '';
+            } else {
+                document.getElementById('quote-frame-cost').value = data.custom_frame_cost_per_watt || '';
+            }
+
+            // Update the other costs
+            document.getElementById('quote-installation-cost').value = data.installation_cost_per_watt || '';
+            document.getElementById('quote-dc-cable-cost').value = data.dc_roll_cost || '';
+            document.getElementById('quote-ac-cable-cost').value = data.ac_wire_cost || '';
+            document.getElementById('quote-transportation-cost').value = data.transport_cost || '';
+            document.getElementById('quote-accessories-cost').value = data.accessories_cost || '';
+            document.getElementById('quote-labor-cost').value = data.labour_cost || '';
+            document.getElementById('quote-net-metering-cost').value = data.net_metering || '';
+
+            console.log('Quote fields populated with global settings');
+        })
+        .catch(error => {
+            console.error('Error fetching prices for quote fields:', error);
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     fetchPrices();
+    fetchPanelsForDropdown();
+    populateQuoteFields(); // Call the new function to populate quote fields
+    
+    // Also update quote fields when L2 setting changes
+    document.getElementById('l2').addEventListener('change', function() {
+        populateQuoteFields();
+    });
 });
 
 function fetchPrices() {
