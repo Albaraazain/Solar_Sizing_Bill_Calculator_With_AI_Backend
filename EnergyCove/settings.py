@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pc=lv^g6gx1cqb_s6qs7&9&a@u8d@&ek6z82v=-vg85m9+6)m-'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-pc=lv^g6gx1cqb_s6qs7&9&a@u8d@&ek6z82v=-vg85m9+6)m-')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
-API_URL = 'http://127.0.0.1:8000/api'  # Add this line
+# Update API URL to be dynamic based on environment
+API_URL = os.environ.get('API_URL', 'http://127.0.0.1:8000/api')
 
 
 # Application definition
@@ -147,11 +149,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/assets/'  # match vite assets directory name
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 STATICFILES_DIRS = [
     BASE_DIR / 'frontend' / 'dist' / 'assets',  # point to vite assets
+    os.path.join(BASE_DIR, 'static')
 ]
-
 
 
 # Default primary key field type
@@ -196,5 +199,18 @@ LOGGING = {
         },
     },
 }
+
+# Vercel-specific settings
+if os.environ.get('VERCEL_DEPLOYMENT'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+    CORS_ALLOWED_ORIGINS = [
+        os.environ.get('VERCEL_URL', ''),
+        'https://energy-cove-solar-calculator.vercel.app',
+    ] + CORS_ALLOWED_ORIGINS
 
 CORS_ALLOW_CREDENTIALS = True
